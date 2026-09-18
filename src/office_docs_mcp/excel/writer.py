@@ -98,7 +98,9 @@ def excel_write_range(
         wb.save(path)
         rows_count = len(data)
         cols_count = max(len(r) for r in data) if data else 0
-        return f"Written {rows_count} rows x {cols_count} cols starting at {sheet_name}!{start_cell}"
+        return (
+            f"Written {rows_count} rows x {cols_count} cols starting at {sheet_name}!{start_cell}"
+        )
     finally:
         wb.close()
 

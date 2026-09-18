@@ -41,7 +41,9 @@ def excel_get_metadata(file_path: str) -> dict[str, Any]:
                 }
             )
 
-        active_title = wb.active.title if wb.active else (wb.sheetnames[0] if wb.sheetnames else None)
+        active_title = (
+            wb.active.title if wb.active else (wb.sheetnames[0] if wb.sheetnames else None)
+        )
         return {
             "file_path": str(path),
             "sheet_names": wb.sheetnames,
@@ -85,7 +87,9 @@ def excel_read_sheet(
     try:
         if sheet_name:
             if sheet_name not in wb.sheetnames:
-                raise ValueError(f"Sheet '{sheet_name}' not found. Available sheets: {wb.sheetnames}")
+                raise ValueError(
+                    f"Sheet '{sheet_name}' not found. Available sheets: {wb.sheetnames}"
+                )
             ws = wb[sheet_name]
         else:
             ws = wb.active

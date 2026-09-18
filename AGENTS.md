@@ -128,7 +128,9 @@ office_docs_mcp/
          file_path = tmp_path / "sample.xlsx"
          excel_create_workbook(str(file_path))
          excel_write_cell(str(file_path), "Sheet", "B2", "Hello MCP")
-         result = excel_read_sheet(str(file_path), "Sheet", start_row=2, end_row=2, start_col=2, end_col=2)
+         result = excel_read_sheet(
+             str(file_path), "Sheet", start_row=2, end_row=2, start_col=2, end_col=2
+         )
          assert "Hello MCP" in result
      ```
 2. **최소 코드 구현 (`Green`)**:

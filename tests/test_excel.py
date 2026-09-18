@@ -63,7 +63,9 @@ def test_excel_append_rows(tmp_path):
     sheet_info = next(s for s in meta["sheets"] if s["name"] == "Log")
     assert sheet_info["max_row"] == 3
 
-    raw_data = excel_read_sheet(str(f), "Log", start_row=1, end_row=3, start_col=1, end_col=2, format="raw")
+    raw_data = excel_read_sheet(
+        str(f), "Log", start_row=1, end_row=3, start_col=1, end_col=2, format="raw"
+    )
     assert len(raw_data) == 3
     assert raw_data[2] == [2, "Second"]
 
@@ -84,6 +86,13 @@ def test_excel_formula_handling(tmp_path):
 
     # Read with evaluate_formulas=False should show the formula string
     formula_view = excel_read_sheet(
-        str(f), "Calc", start_row=3, end_row=3, start_col=1, end_col=1, evaluate_formulas=False, format="raw"
+        str(f),
+        "Calc",
+        start_row=3,
+        end_row=3,
+        start_col=1,
+        end_col=1,
+        evaluate_formulas=False,
+        format="raw",
     )
     assert formula_view == [["=SUM(A1:A2)"]]

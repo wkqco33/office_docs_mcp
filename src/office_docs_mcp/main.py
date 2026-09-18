@@ -51,8 +51,12 @@ def build_root() -> Command:
     hello.add_bool_flag("loud", help="대문자로 출력한다.", shorthand="l")
     config = Command(use="config", short="현재 설정을 출력한다.", run=run_config)
     db_init = Command(use="db-init", short="SQLite 파일과 기본 테이블을 준비한다.", run=run_db_init)
-    serve = Command(use="serve", short="Start the Office Docs MCP server (Stdio transport).", run=run_serve)
-    serve.add_string_flag("transport", help="Transport type ('stdio' or 'sse')", default="stdio", shorthand="t")
+    serve = Command(
+        use="serve", short="Start the Office Docs MCP server (Stdio transport).", run=run_serve
+    )
+    serve.add_string_flag(
+        "transport", help="Transport type ('stdio' or 'sse')", default="stdio", shorthand="t"
+    )
     root.add_command(hello, config, db_init, serve)
     return root
 
@@ -77,7 +81,9 @@ def run_config(ctx):
 
 
 def run_db_init(ctx):
-    database_path = initialize_database(str(ctx.config.get("sqlite.path", "data/office_docs_mcp.db")))
+    database_path = initialize_database(
+        str(ctx.config.get("sqlite.path", "data/office_docs_mcp.db"))
+    )
     if ctx.logger is not None:
         ctx.logger.info("sqlite initialized", extra={"path": str(database_path)})
     print(ctx.terminal.message("success", "SQLite", f"Database ready at {database_path}"))
@@ -93,7 +99,6 @@ def run_serve(ctx):
         ctx.logger.info("Starting MCP server", extra={"transport": transport})
     server.run(transport=transport)
     return 0
-
 
 
 def main() -> int:

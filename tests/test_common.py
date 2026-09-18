@@ -39,10 +39,5 @@ def test_format_as_markdown_table():
     headers = ["Col A", "Col B"]
     rows = [["1", "2"], ["3", "4"]]
     md = format_as_markdown_table(headers, rows)
-    expected = (
-        "| Col A | Col B |\n"
-        "| --- | --- |\n"
-        "| 1 | 2 |\n"
-        "| 3 | 4 |"
-    )
+    expected = "| Col A | Col B |\n| --- | --- |\n| 1 | 2 |\n| 3 | 4 |"
     assert md == expected

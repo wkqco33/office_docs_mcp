@@ -99,9 +99,7 @@ def ppt_update_slide_text(
 
     slide = prs.slides[slide_idx]
     if shape_idx < 0 or shape_idx >= len(slide.shapes):
-        raise IndexError(
-            f"Shape index {shape_idx} out of range on slide {slide_idx}."
-        )
+        raise IndexError(f"Shape index {shape_idx} out of range on slide {slide_idx}.")
 
     shape = slide.shapes[shape_idx]
     if not shape.has_text_frame:
