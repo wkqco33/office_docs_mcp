@@ -1,9 +1,34 @@
 [project]
 name = "office_docs_mcp"
 version = "0.1.0"
-description = "wpycli 기반 CLI 프로젝트 템플릿"
+description = "Model Context Protocol (MCP) server for reading and writing Office documents (Excel, Word, PowerPoint)"
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Antigravity Team" },
+]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "office",
+    "excel",
+    "word",
+    "powerpoint",
+    "openpyxl",
+    "python-docx",
+    "python-pptx",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Office/Business :: Office Suites",
+]
 dependencies = [
     "wpyconf",
     "wpylog",
@@ -16,6 +41,7 @@ dependencies = [
 
 [project.scripts]
 office-docs-mcp = "office_docs_mcp.main:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -31,7 +57,7 @@ target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I"]
+select = ["E4", "E7", "E9", "F", "I", "B", "C4", "UP"]
 
 [dependency-groups]
 dev = ["ruff", "pytest"]

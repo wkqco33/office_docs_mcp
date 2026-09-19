@@ -47,15 +47,18 @@ def word_append_paragraph(
     path = validate_file_path(file_path, expected_extensions=VALID_WORD_EXTS)
     doc = Document(str(path))
 
-    if style and style.lower().startswith("heading"):
-        # Extract heading level if possible
-        try:
-            level = int(style.split()[-1])
-            doc.add_heading(text, level=level)
-        except (ValueError, IndexError):
+    try:
+        if style and style.lower().startswith("heading"):
+            # Extract heading level if possible
+            try:
+                level = int(style.split()[-1])
+                doc.add_heading(text, level=level)
+            except (ValueError, IndexError):
+                doc.add_paragraph(text, style=style)
+        else:
             doc.add_paragraph(text, style=style)
-    else:
-        doc.add_paragraph(text, style=style)
+    except KeyError as err:
+        raise ValueError(f"Style '{style}' not found in document styles.") from err
 
     doc.save(str(path))
     return f"Appended paragraph to {path}"

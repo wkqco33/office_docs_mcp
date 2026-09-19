@@ -1,11 +1,5 @@
 [app]
 name = "office_docs_mcp"
-default_target = "world"
-grpc_enabled = false
 
 [logging]
 level = "INFO"
-
-[sqlite]
-enabled = true
-path = "data/office_docs_mcp.db"

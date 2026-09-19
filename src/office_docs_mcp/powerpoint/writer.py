@@ -62,10 +62,17 @@ def ppt_add_slide(
     if slide.shapes.title:
         slide.shapes.title.text = title
 
-    if content and len(slide.placeholders) > 1:
-        body_shape = slide.placeholders[1]
-        tf = body_shape.text_frame
-        tf.text = content
+    if content:
+        if len(slide.placeholders) > 1:
+            body_shape = slide.placeholders[1]
+            tf = body_shape.text_frame
+            tf.text = content
+        else:
+            from pptx.util import Inches
+
+            tb = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(8), Inches(4))
+            tb.text_frame.word_wrap = True
+            tb.text_frame.text = content
 
     prs.save(str(path))
     new_idx = len(prs.slides) - 1

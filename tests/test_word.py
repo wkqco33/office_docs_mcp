@@ -83,3 +83,10 @@ def test_word_invalid_table_index(tmp_path):
     word_create_document(str(f))
     with pytest.raises(IndexError, match="Table index 0 out of range"):
         word_read_table(str(f), table_idx=0)
+
+
+def test_word_invalid_style(tmp_path):
+    f = tmp_path / "style_doc.docx"
+    word_create_document(str(f))
+    with pytest.raises(ValueError, match="Style 'NonExistentStyle' not found"):
+        word_append_paragraph(str(f), "Text", style="NonExistentStyle")

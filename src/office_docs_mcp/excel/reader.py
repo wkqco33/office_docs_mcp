@@ -100,13 +100,16 @@ def excel_read_sheet(
         actual_start_col = max(1, start_col)
         actual_end_col = max(actual_start_col, end_col)
 
-        rows_data: list[list[Any]] = []
-        for r in range(actual_start_row, actual_end_row + 1):
-            row_vals = []
-            for c in range(actual_start_col, actual_end_col + 1):
-                val = ws.cell(row=r, column=c).value
-                row_vals.append(val)
-            rows_data.append(row_vals)
+        rows_data = [
+            list(row)
+            for row in ws.iter_rows(
+                min_row=actual_start_row,
+                max_row=actual_end_row,
+                min_col=actual_start_col,
+                max_col=actual_end_col,
+                values_only=True,
+            )
+        ]
 
         if format == "raw":
             return rows_data

@@ -58,3 +58,15 @@ def test_ppt_invalid_slide_index(tmp_path):
     ppt_create_presentation(str(f))
     with pytest.raises(IndexError, match="Slide index 99 out of range"):
         ppt_read_slide(str(f), slide_idx=99)
+
+
+def test_ppt_add_slide_fallback_textbox(tmp_path):
+    f = tmp_path / "deck_fallback.pptx"
+    ppt_create_presentation(str(f))
+    # Layout 5 is Title-only (has only 1 placeholder)
+    ppt_add_slide(str(f), title="Title Only", content="Fallback Content", layout_idx=5)
+
+    slide_data = ppt_read_slide(str(f), slide_idx=0)
+    assert slide_data["title"] == "Title Only"
+    content_found = any("Fallback Content" in s.get("text", "") for s in slide_data["shapes"])
+    assert content_found

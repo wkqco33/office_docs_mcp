@@ -1,12 +1,33 @@
+# Virtual environment
 .venv/
+
+# Python byte-code and caches
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
 dist/
 build/
 .coverage
+htmlcov/
 .pytest_cache/
 .ruff_cache/
+
+# Environment and secrets
 .env
+*.env.local
+
+# Databases and data dirs
 data/
 *.db
+*.sqlite3
+
+# IDE / Editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

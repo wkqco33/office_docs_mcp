@@ -41,6 +41,10 @@
 office_docs_mcp/
 ├── AGENTS.md                  # 에이전트용 개발 가이드 (본 문서)
 ├── README.md                  # 사용자용 프로젝트 설명서
+├── CHANGELOG.md               # 변경 이력 기록 (Keep a Changelog)
+├── CONTRIBUTING.md            # 기여 가이드
+├── SECURITY.md                # 보안 정책
+├── LICENSE                    # 라이선스 (MIT)
 ├── pyproject.toml             # uv 패키지 및 의존성 정의
 ├── config.toml                # 런타임 설정 파일
 ├── src/
