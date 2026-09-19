@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-19
+
+### Added
+- **MCP Client Integration**: Added `mcp.example.json` with configuration examples for Claude Desktop and other MCP clients.
+- **Environment & CLI Options**: Added documentation and examples for environment variables (`OFFICE_DOCS_MCP_LOGGING__LEVEL`, `OFFICE_DOCS_MCP_LOGGING__FILE`, `XDG_CONFIG_HOME`) and CLI flags (`--log-file`, `--log-level`, `-c/--config`).
+
 ## [0.1.0] - 2026-09-19
 
 ### Added
