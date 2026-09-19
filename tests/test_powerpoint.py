@@ -139,3 +139,136 @@ def test_ppt_add_table(tmp_path):
     slide_data = ppt_read_slide(str(f), slide_idx=0)
     table_shape = next(s for s in slide_data["shapes"] if s.get("table_data"))
     assert table_shape["table_data"] == data
+
+
+def test_ppt_add_chart(tmp_path):
+    from office_docs_mcp.powerpoint.reader import ppt_read_slide
+    from office_docs_mcp.powerpoint.writer import ppt_add_chart
+
+    f = tmp_path / "chart_deck.pptx"
+    ppt_create_presentation(str(f), title="Chart Demo")
+
+    categories = ["Q1", "Q2", "Q3", "Q4"]
+    series_data = [
+        {"name": "Revenue", "values": [100.0, 150.0, 120.0, 180.0]},
+        {"name": "Profit", "values": [20.0, 35.0, 25.0, 40.0]},
+    ]
+    res = ppt_add_chart(
+        str(f),
+        slide_idx=0,
+        chart_type="column_clustered",
+        categories=categories,
+        series_data=series_data,
+        title="Quarterly Performance",
+        backup=True,
+    )
+    assert "Added column_clustered chart" in res
+
+    slide_data = ppt_read_slide(str(f), slide_idx=0)
+    chart_shape = next(s for s in slide_data["shapes"] if s.get("has_chart"))
+    assert chart_shape is not None
+    assert chart_shape["chart_title"] == "Quarterly Performance"
+
+    backups = list(tmp_path.glob("chart_deck.pptx.*.bak"))
+    assert len(backups) == 1
+
+
+def test_ppt_add_chart_invalid_type(tmp_path):
+    from office_docs_mcp.powerpoint.writer import ppt_add_chart
+
+    f = tmp_path / "deck.pptx"
+    ppt_create_presentation(str(f), title="Test")
+
+    with pytest.raises(ValueError, match="Unsupported chart type 'radar'"):
+        ppt_add_chart(
+            str(f),
+            slide_idx=0,
+            chart_type="radar",
+            categories=["A", "B"],
+            series_data=[{"name": "S", "values": [1, 2]}],
+        )
+
+
+def test_ppt_add_flowchart(tmp_path):
+    from office_docs_mcp.powerpoint.reader import ppt_read_slide
+    from office_docs_mcp.powerpoint.writer import ppt_add_flowchart
+
+    f = tmp_path / "flowchart_deck.pptx"
+    ppt_create_presentation(str(f), title="Architecture")
+
+    mermaid = """
+    graph TD
+      Client[MCP Client] --> Server[FastMCP Server]
+      Server --> Engine[Doc Engines]
+    """
+    res = ppt_add_flowchart(
+        str(f),
+        slide_idx=0,
+        mermaid_code=mermaid,
+        title="Project Architecture",
+        backup=True,
+    )
+    assert "Added flowchart (3 nodes, 2 edges)" in res
+
+    slide_data = ppt_read_slide(str(f), slide_idx=0)
+    texts = [s.get("text", "") for s in slide_data["shapes"] if s.get("has_text")]
+    assert any("MCP Client" in t for t in texts)
+    assert any("FastMCP Server" in t for t in texts)
+    assert any("Doc Engines" in t for t in texts)
+
+    backups = list(tmp_path.glob("flowchart_deck.pptx.*.bak"))
+    assert len(backups) == 1
+
+
+def test_ppt_add_flowchart_lr(tmp_path):
+    from office_docs_mcp.powerpoint.reader import ppt_read_slide
+    from office_docs_mcp.powerpoint.writer import ppt_add_flowchart
+
+    f = tmp_path / "flowchart_lr.pptx"
+    ppt_create_presentation(str(f))
+
+    mermaid = """
+    flowchart LR
+      Start(시작) --> Cond{검증}
+      Cond --> End[종료]
+    """
+    res = ppt_add_flowchart(str(f), slide_idx=0, mermaid_code=mermaid)
+    assert "Added flowchart (3 nodes, 2 edges)" in res
+
+    slide_data = ppt_read_slide(str(f), slide_idx=0)
+    texts = [s.get("text", "") for s in slide_data["shapes"] if s.get("has_text")]
+    assert any("시작" in t for t in texts)
+    assert any("검증" in t for t in texts)
+    assert any("종료" in t for t in texts)
+
+
+def test_ppt_add_flowchart_complex(tmp_path):
+    from office_docs_mcp.powerpoint.reader import ppt_read_slide
+    from office_docs_mcp.powerpoint.writer import ppt_add_flowchart
+
+    f = tmp_path / "complex_flow.pptx"
+    ppt_create_presentation(str(f), title="System Flow")
+
+    code = """
+    graph TD
+      Client[MCP Clients<br/>Copilot / Claude / agy] --> Server[FastMCP Server]
+      Server --> Excel[Excel Engine]
+      Server --> Word[Word Engine]
+      Server --> PPT[PowerPoint Engine]
+      Excel --> Common[file_utils & config]
+      Word --> Common
+      PPT --> Common
+    """
+    res = ppt_add_flowchart(
+        str(f),
+        slide_idx=0,
+        mermaid_code=code,
+        title="Office Docs Architecture",
+    )
+    assert "Added flowchart (6 nodes, 7 edges)" in res
+
+    slide_data = ppt_read_slide(str(f), slide_idx=0)
+    texts = [s.get("text", "") for s in slide_data["shapes"] if s.get("has_text")]
+    assert any("FastMCP Server" in t for t in texts)
+    assert any("Excel Engine" in t for t in texts)
+    assert any("Office Docs Architecture" in t for t in texts)

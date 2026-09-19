@@ -40,6 +40,8 @@ LLM(대형 언어 모델)이 오피스 문서(Excel, Word, PowerPoint)를 안정
   - `ppt_search`: 슬라이드 텍스트, 표, 발표자 메모 대상 키워드 검색
   - `ppt_add_slide`: 제목과 본문을 포함하는 새 슬라이드 추가 (`backup=True` 지원)
   - `ppt_add_table`: 슬라이드 내 표 생성 (`backup=True` 지원)
+  - `ppt_add_chart`: 막대, 꺾은선, 원형 등 네이티브 수치 차트 생성 (`backup=True` 지원)
+  - `ppt_add_flowchart`: Mermaid 문법 기반 편집 가능한 네이티브 플로우차트/아키텍처 다이어그램 생성 (`backup=True` 지원)
   - `ppt_update_slide_text`: 슬라이드 내 특정 셰이프 텍스트 수정 (`backup=True` 지원)
   - `ppt_create_presentation`: 새 프레젠테이션 파일 생성
 - **MCP Prompts (`@mcp.prompt()`)**:

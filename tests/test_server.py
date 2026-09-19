@@ -41,6 +41,8 @@ async def test_server_tools_registered():
     assert "ppt_search" in tool_names
     assert "ppt_add_slide" in tool_names
     assert "ppt_add_table" in tool_names
+    assert "ppt_add_chart" in tool_names
+    assert "ppt_add_flowchart" in tool_names
     assert "ppt_update_slide_text" in tool_names
     assert "ppt_create_presentation" in tool_names
 

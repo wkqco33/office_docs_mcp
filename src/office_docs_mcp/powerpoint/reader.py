@@ -74,6 +74,7 @@ def ppt_read_slide(file_path: str, slide_idx: int) -> dict[str, Any]:
             "name": shape.name,
             "has_text": shape.has_text_frame,
             "is_table": shape.has_table,
+            "has_chart": shape.has_chart,
         }
 
         if shape.has_text_frame:
@@ -85,6 +86,14 @@ def ppt_read_slide(file_path: str, slide_idx: int) -> dict[str, Any]:
             for row in table.rows:
                 rows_data.append([cell.text.strip() for cell in row.cells])
             shape_info["table_data"] = rows_data
+
+        if shape.has_chart:
+            chart = shape.chart
+            chart_title = ""
+            if chart.has_title and chart.chart_title and chart.chart_title.has_text_frame:
+                chart_title = chart.chart_title.text_frame.text.strip()
+            shape_info["chart_title"] = chart_title
+            shape_info["chart_type"] = str(chart.chart_type)
 
         shapes_data.append(shape_info)
 

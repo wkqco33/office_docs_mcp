@@ -41,6 +41,12 @@ from office_docs_mcp.powerpoint.reader import (
     ppt_search as _ppt_search,
 )
 from office_docs_mcp.powerpoint.writer import (
+    ppt_add_chart as _ppt_add_chart,
+)
+from office_docs_mcp.powerpoint.writer import (
+    ppt_add_flowchart as _ppt_add_flowchart,
+)
+from office_docs_mcp.powerpoint.writer import (
     ppt_add_slide as _ppt_add_slide,
 )
 from office_docs_mcp.powerpoint.writer import (
@@ -642,6 +648,113 @@ def ppt_add_table(
         rows=rows,
         cols=cols,
         data=data,
+        left=left,
+        top=top,
+        width=width,
+        height=height,
+        backup=backup,
+    )
+
+
+@mcp.tool()
+def ppt_add_chart(
+    file_path: str,
+    slide_idx: int,
+    chart_type: str,
+    categories: list[str],
+    series_data: list[dict[str, Any]],
+    title: str | None = None,
+    left: float = 1.0,
+    top: float = 1.5,
+    width: float = 8.0,
+    height: float = 4.5,
+    backup: bool = False,
+) -> str:
+    """Add a native Excel-backed chart to a slide in a PowerPoint presentation.
+
+    Supported chart types:
+    - 'column_clustered', 'column_stacked', 'column_stacked_100'
+    - 'bar_clustered', 'bar_stacked', 'bar_stacked_100'
+    - 'line', 'line_markers', 'line_stacked'
+    - 'pie', 'pie_exploded', 'doughnut'
+    - 'area', 'area_stacked'
+
+    Args:
+        file_path: Path to the PowerPoint file (.pptx).
+        slide_idx: 0-based index of the slide.
+        chart_type: Chart type name (e.g., 'column_clustered', 'line', 'pie', 'bar_clustered').
+        categories: Category labels along the category axis (e.g. ['Q1', 'Q2', 'Q3', 'Q4']).
+        series_data: List of series dicts, each with 'name' (str) and 'values' (list of numbers).
+                     Example: [{'name': 'Revenue', 'values': [100, 120, 140, 160]}]
+        title: Optional chart title.
+        left: Left offset position in inches (default: 1.0).
+        top: Top offset position in inches (default: 1.5).
+        width: Chart width in inches (default: 8.0).
+        height: Chart height in inches (default: 4.5).
+        backup: If True, create a backup of the original file before modifying.
+    """
+    return _ppt_add_chart(
+        file_path=file_path,
+        slide_idx=slide_idx,
+        chart_type=chart_type,
+        categories=categories,
+        series_data=series_data,
+        title=title,
+        left=left,
+        top=top,
+        width=width,
+        height=height,
+        backup=backup,
+    )
+
+
+@mcp.tool()
+def ppt_add_flowchart(
+    file_path: str,
+    slide_idx: int,
+    mermaid_code: str,
+    title: str | None = None,
+    direction: str = "auto",
+    left: float = 0.8,
+    top: float = 1.6,
+    width: float = 8.4,
+    height: float = 5.0,
+    backup: bool = False,
+) -> str:
+    """Add an editable flowchart or architecture diagram to a PowerPoint slide using Mermaid syntax.
+
+    Nodes are rendered as native PowerPoint shapes (Rounded Rectangles, Diamonds for conditions,
+    Ovals/Stadiums) connected by native connector arrows with arrowheads.
+    All text, colors, shapes, and layouts remain 100% editable inside PowerPoint.
+
+    Supported Mermaid Syntax:
+    - Direction: 'graph TD' / 'flowchart TD' (Top-Down), 'graph LR' / 'flowchart LR' (Left-Right)
+    - Box node: `NodeID[Node Label]`
+    - Rounded node: `NodeID(Node Label)`
+    - Condition/Decision node: `NodeID{Condition Label}`
+    - Stadium/Pill node: `NodeID([Label])`
+    - Line breaks in labels: `<br/>` or `\\n`
+    - Arrows: `A --> B`, `A -->|label| B`, `A --- B`, `A ==> B`, `A -.-> B`
+    - Chain connections: `A --> B --> C`
+
+    Args:
+        file_path: Path to the PowerPoint file (.pptx).
+        slide_idx: 0-based index of the slide (auto-creates slide if presentation is empty).
+        mermaid_code: Mermaid diagram code string.
+        title: Optional slide title to display at the top.
+        direction: Layout direction: 'auto' (detect from code), 'TD' (Top-Down), or 'LR' (Left-Right).
+        left: Left margin offset in inches (default: 0.8).
+        top: Top margin offset in inches (default: 1.6).
+        width: Total width allocated for diagram in inches (default: 8.4).
+        height: Total height allocated for diagram in inches (default: 5.0).
+        backup: If True, create a backup of the original file before modifying.
+    """
+    return _ppt_add_flowchart(
+        file_path=file_path,
+        slide_idx=slide_idx,
+        mermaid_code=mermaid_code,
+        title=title,
+        direction=direction,
         left=left,
         top=top,
         width=width,

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from pptx import Presentation
 
 from office_docs_mcp.common.file_utils import (
@@ -236,3 +238,173 @@ def ppt_add_table(
 
     prs.save(str(path))
     return f"Added table ({rows}x{cols}) to slide {slide_idx} in {path}{bak_msg}"
+
+
+def ppt_add_chart(
+    file_path: str,
+    slide_idx: int,
+    chart_type: str,
+    categories: list[str],
+    series_data: list[dict[str, Any]],
+    title: str | None = None,
+    left: float = 1.0,
+    top: float = 1.5,
+    width: float = 8.0,
+    height: float = 4.5,
+    backup: bool = False,
+) -> str:
+    """Add a native Excel-backed chart to a slide in a PowerPoint presentation.
+
+    Args:
+        file_path: Path to the PowerPoint file (.pptx).
+        slide_idx: 0-based index of the slide.
+        chart_type: Type of chart ('column_clustered', 'bar_clustered', 'line', 'pie', 'doughnut', 'area', etc.).
+        categories: List of category labels along the X-axis (e.g. ['Q1', 'Q2', 'Q3', 'Q4']).
+        series_data: List of series dictionaries, e.g. [{'name': 'Sales', 'values': [100, 120, 140, 160]}].
+        title: Optional chart title.
+        left: Left offset position in inches (default: 1.0).
+        top: Top offset position in inches (default: 1.5).
+        width: Chart width in inches (default: 8.0).
+        height: Chart height in inches (default: 4.5).
+        backup: If True, create a backup before modifying.
+
+    Returns:
+        Status confirmation message.
+    """
+    from pptx.chart.data import CategoryChartData
+    from pptx.enum.chart import XL_CHART_TYPE
+    from pptx.util import Inches
+
+    norm_chart_type = chart_type.lower().strip()
+    chart_type_map = {
+        "column_clustered": XL_CHART_TYPE.COLUMN_CLUSTERED,
+        "column_stacked": XL_CHART_TYPE.COLUMN_STACKED,
+        "column_stacked_100": XL_CHART_TYPE.COLUMN_STACKED_100,
+        "bar_clustered": XL_CHART_TYPE.BAR_CLUSTERED,
+        "bar_stacked": XL_CHART_TYPE.BAR_STACKED,
+        "bar_stacked_100": XL_CHART_TYPE.BAR_STACKED_100,
+        "line": XL_CHART_TYPE.LINE,
+        "line_markers": XL_CHART_TYPE.LINE_MARKERS,
+        "line_stacked": XL_CHART_TYPE.LINE_STACKED,
+        "pie": XL_CHART_TYPE.PIE,
+        "pie_exploded": XL_CHART_TYPE.PIE_EXPLODED,
+        "doughnut": XL_CHART_TYPE.DOUGHNUT,
+        "area": XL_CHART_TYPE.AREA,
+        "area_stacked": XL_CHART_TYPE.AREA_STACKED,
+    }
+    if norm_chart_type not in chart_type_map:
+        supported = ", ".join(chart_type_map.keys())
+        raise ValueError(f"Unsupported chart type '{chart_type}'. Supported types: {supported}")
+
+    path = validate_file_path(file_path, expected_extensions=VALID_PPT_EXTS)
+    bak_msg = ""
+    if backup:
+        bak = create_backup(path)
+        if bak:
+            bak_msg = f" (backup created: {bak.name})"
+
+    prs = Presentation(str(path))
+    if slide_idx < 0 or slide_idx >= len(prs.slides):
+        raise IndexError(
+            f"Slide index {slide_idx} out of range. Presentation has {len(prs.slides)} slides."
+        )
+
+    slide = prs.slides[slide_idx]
+
+    chart_data = CategoryChartData()
+    chart_data.categories = categories
+    for series in series_data:
+        s_name = series.get("name", "")
+        s_values = tuple(series.get("values", []))
+        chart_data.add_series(s_name, s_values)
+
+    xl_chart_type = chart_type_map[norm_chart_type]
+    chart_shape = slide.shapes.add_chart(
+        xl_chart_type,
+        Inches(left),
+        Inches(top),
+        Inches(width),
+        Inches(height),
+        chart_data,
+    )
+    chart = chart_shape.chart
+
+    if title:
+        chart.has_title = True
+        chart.chart_title.text_frame.text = title
+
+    prs.save(str(path))
+    return f"Added {norm_chart_type} chart to slide {slide_idx} in {path}{bak_msg}"
+
+
+def ppt_add_flowchart(
+    file_path: str,
+    slide_idx: int,
+    mermaid_code: str,
+    title: str | None = None,
+    direction: str = "auto",
+    left: float = 0.8,
+    top: float = 1.6,
+    width: float = 8.4,
+    height: float = 5.0,
+    backup: bool = False,
+) -> str:
+    """Add an editable flowchart or architecture diagram to a slide using Mermaid syntax.
+
+    Nodes are rendered as native PowerPoint shapes (Rounded Rectangles, Diamonds, etc.)
+    connected by native connector arrows, making text, colors, and layout fully editable.
+
+    Args:
+        file_path: Path to the PowerPoint file (.pptx).
+        slide_idx: 0-based index of the slide.
+        mermaid_code: Mermaid syntax code (e.g. 'graph TD\n A[Client] --> B[Server]').
+        title: Optional title to place at the top of the slide.
+        direction: Layout direction: 'auto' (detect from code), 'TD' (Top-Down), or 'LR' (Left-Right).
+        left: Left margin in inches (default: 0.8).
+        top: Top margin in inches (default: 1.6).
+        width: Total width allocated for the diagram in inches (default: 8.4).
+        height: Total height allocated for the diagram in inches (default: 5.0).
+        backup: If True, create a backup before modifying.
+
+    Returns:
+        Status confirmation message.
+    """
+    from office_docs_mcp.powerpoint.flowchart import parse_mermaid, render_flowchart
+
+    path = validate_file_path(file_path, expected_extensions=VALID_PPT_EXTS)
+    bak_msg = ""
+    if backup:
+        bak = create_backup(path)
+        if bak:
+            bak_msg = f" (backup created: {bak.name})"
+
+    prs = Presentation(str(path))
+    if len(prs.slides) == 0:
+        # Automatically create a slide if presentation has no slides
+        blank_layout = prs.slide_layouts[6] if len(prs.slide_layouts) > 6 else prs.slide_layouts[0]
+        slide = prs.slides.add_slide(blank_layout)
+        slide_idx = 0
+    elif slide_idx < 0 or slide_idx >= len(prs.slides):
+        raise IndexError(
+            f"Slide index {slide_idx} out of range. Presentation has {len(prs.slides)} slides."
+        )
+    else:
+        slide = prs.slides[slide_idx]
+
+    nodes, edges, detected_dir = parse_mermaid(mermaid_code)
+    actual_dir = detected_dir if direction == "auto" else direction.upper()
+
+    render_flowchart(
+        slide=slide,
+        nodes=nodes,
+        edges=edges,
+        direction=actual_dir,
+        left=left,
+        top=top,
+        width=width,
+        height=height,
+        title=title,
+    )
+
+    prs.save(str(path))
+    return f"Added flowchart ({len(nodes)} nodes, {len(edges)} edges) to slide {slide_idx} in {path}{bak_msg}"

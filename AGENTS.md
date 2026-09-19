@@ -134,6 +134,10 @@ office_docs_mcp/
   - 제목과 본문을 포함하는 새 슬라이드 생성.
 - `ppt_add_table(file_path: str, slide_idx: int, rows: int, cols: int, data: list[list[str]] | None = None, backup: bool = False)`:
   - 특정 슬라이드에 행/열 크기 및 데이터를 지정한 표 생성.
+- `ppt_add_chart(file_path: str, slide_idx: int, chart_type: str, categories: list[str], series_data: list[dict[str, Any]], title: str | None = None, backup: bool = False)`:
+  - 막대, 꺾은선, 원형, 도넛, 영역 등 파워포인트 네이티브 엑셀 연동 차트 생성.
+- `ppt_add_flowchart(file_path: str, slide_idx: int, mermaid_code: str, title: str | None = None, direction: str = "auto", backup: bool = False)`:
+  - Mermaid 문법(`graph TD`, `flowchart LR`)을 파싱하여 파워포인트 슬라이드에 편집 가능한 네이티브 도형(AutoShape)과 화살표 커넥터로 플로우차트/아키텍처 다이어그램 생성.
 - `ppt_update_slide_text(file_path: str, slide_idx: int, shape_idx: int, text: str, backup: bool = False)`:
   - 특정 슬라이드의 지정된 셰이프 텍스트 수정.
 - `ppt_create_presentation(file_path: str, title: str | None = None)`:

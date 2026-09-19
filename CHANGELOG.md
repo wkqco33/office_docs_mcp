@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **PowerPoint Native Charts (`ppt_add_chart`)**:
+  - Add native Excel-backed charts (column, bar, line, pie, doughnut, area) with custom categories, series data, titles, and `backup=True` support.
+  - Enhanced `ppt_read_slide` to inspect chart titles and chart types.
+- **PowerPoint Editable Flowcharts (`ppt_add_flowchart`)**:
+  - Render Mermaid flowchart syntax (`graph TD`, `flowchart LR`, etc.) as native editable PowerPoint shapes (Rounded Rectangles, Diamonds, Stadiums/Ovals) and connectors with arrowheads.
+  - Auto-layout algorithm calculates topological ranks without node overlap.
+  - Full editing support inside PowerPoint (text, colors, and layout).
+
 ## [0.2.0] - 2026-09-19
 
 ### Added
