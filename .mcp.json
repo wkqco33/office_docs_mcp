@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "office-docs": {
+      "command": "uvx",
+      "args": ["office-docs-mcp", "serve"],
+      "lifecycle": "lazy"
+    }
+  }
+}
