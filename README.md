@@ -97,9 +97,27 @@ uv run office-docs-mcp config get logging.level       # 특정 설정 값 조회
 uv run office-docs-mcp completion bash > /etc/bash_completion.d/office-docs-mcp
 ```
 
-### 4. Claude Desktop / MCP 클라이언트 연동 설정 예시
+### 4. MCP 클라이언트 연동 설정 (Claude Desktop, Antigravity `agy`, Cursor 등)
 
 별도의 저장소 클론이나 사전 설치 없이 `uvx`를 통해 곧바로 연동할 수 있습니다:
+
+#### Antigravity CLI (`agy`) 및 Antigravity IDE / 2.0
+- **전역 설정 (모든 프로젝트에서 사용)**: `~/.gemini/config/mcp_config.json`
+- **프로젝트별 로컬 설정**: 프로젝트 루트의 `.mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "office-docs": {
+      "command": "uvx",
+      "args": ["office-docs-mcp", "serve"]
+    }
+  }
+}
+```
+
+#### Claude Desktop 설정
+`claude_desktop_config.json`에 동일하게 추가합니다:
 
 ```json
 {
