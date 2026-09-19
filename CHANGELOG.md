@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-19
+
 ### Added
 - **PowerPoint Native Charts (`ppt_add_chart`)**:
   - Add native Excel-backed charts (column, bar, line, pie, doughnut, area) with custom categories, series data, titles, and `backup=True` support.

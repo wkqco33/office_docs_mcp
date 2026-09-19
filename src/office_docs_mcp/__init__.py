@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from .server import get_server, mcp
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "__version__",

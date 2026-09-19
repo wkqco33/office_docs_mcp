@@ -76,7 +76,7 @@ def build_root() -> Command:
             "  office-docs-mcp config show\n"
             "  office-docs-mcp tools --plain"
         ),
-        version="0.2.0",
+        version="0.3.0",
     )
     root.add_persistent_string_flag("config", help="Path to config.toml", shorthand="c")
     root.add_persistent_string_flag("dotenv", help="Path to .env file")

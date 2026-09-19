@@ -1,6 +1,6 @@
 [project]
 name = "office_docs_mcp"
-version = "0.2.0"
+version = "0.3.0"
 description = "Model Context Protocol (MCP) server for reading and writing Office documents (Excel, Word, PowerPoint)"
 readme = "README.md"
 requires-python = ">=3.12"
