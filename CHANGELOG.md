@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-19
+
 ### Added
 - **Full-Text Search Tools**:
   - `excel_search`: Keyword search across all worksheets or specific sheets with row preview.
