@@ -9,21 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- **Platform-Standard Default Configuration Paths**:
-  - Support for XDG Base Directory specification on Linux (`~/.config/office_docs_mcp/config.toml`), Application Support on macOS, and AppData on Windows.
-  - Added `--local` (`-l`) flag across `config init`, `config path`, and `config set` to easily operate on local project `./config.toml`.
-  - Hierarchical runtime configuration merging: base defaults -> platform config -> local project config -> CLI `--config` override -> environment variables.
-- **Config Management Subcommands (`config *`)**:
-  - `config init`: Initialize default `config.toml` file with `--force`, `--local`, and `--path` options.
-  - `config show`: View merged runtime configuration or inspect a specific key in JSON or TOML format (`--json`, `--toml`).
-  - `config path`: Display the active configuration file path with optional `--json` and `--local` flags.
-  - `config set <key> <value>`: Modify configuration keys with automatic type parsing (boolean, integer, float, list, string) and atomic writing.
-  - `config get <key>`: Retrieve specific configuration values by dotted path.
-- **Config Manager Utility**: `src/office_docs_mcp/common/config_manager.py` for safe TOML serialization, platform directory resolution, and nested key management.
-- **Automated PyPI Release Workflow**:
-  - Added `.github/workflows/release.yml` triggered on version tags (`v*`).
-  - Automated testing, package building with `uv build`, PyPI Trusted Publishing (OIDC), and GitHub Releases creation with attached distribution artifacts.
+## [0.1.0] - 2026-09-19
 
 ### Added
 - **MCP Server**: FastMCP server with Stdio and SSE transport support via `office-docs-mcp serve`.
@@ -48,13 +34,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ppt_add_slide`: Add slide with title and content placeholder (with automatic fallback to text boxes).
   - `ppt_update_slide_text`: Update text in designated slide shapes.
   - `ppt_create_presentation`: Create blank `.pptx` presentations with optional title slide.
-- **CLI Commands**:
+- **CLI Commands & Configuration**:
   - `office-docs-mcp serve`: Launch the MCP server.
   - `office-docs-mcp tools`: List registered tools with `--plain` and `--json` machine-readable output flags.
-  - `office-docs-mcp config`: Display effective configuration.
+  - `office-docs-mcp config show`: Display effective configuration or specific key (`--json`, `--toml`).
+  - `office-docs-mcp config init`: Initialize configuration with default values (`--force`, `--local`, `--path`).
+  - `office-docs-mcp config path`: Display active configuration file path (`--json`, `--local`).
+  - `office-docs-mcp config set <key> <value>`: Modify configuration keys with automatic type parsing and atomic writing.
+  - `office-docs-mcp config get <key>`: Retrieve specific configuration values by dotted path.
+  - Platform-standard configuration directory support (Linux XDG, macOS Application Support, Windows AppData).
   - Persistent `--no-color` flag and shell completion generation (`completion <bash|zsh|fish>`).
-- **Open-Source & Governance**:
+- **Open-Source, Governance & CI/CD**:
   - MIT License (`LICENSE`).
   - Contribution guidelines (`CONTRIBUTING.md`).
   - Security disclosure policy (`SECURITY.md`).
   - GitHub Actions CI workflow with matrix testing across Python 3.12 and 3.13.
+  - GitHub Actions automated release pipeline (`release.yml`) for PyPI Trusted Publishing and GitHub Releases upon version tag push.
