@@ -98,7 +98,31 @@ uv run office-docs-mcp completion bash > /etc/bash_completion.d/office-docs-mcp
 }
 ```
 
-또는 로컬 소스 디렉토리에서 직접 실행할 경우:
+#### 환경 변수(`env`) 및 디버깅 옵션 설정 예시
+
+MCP stdio 통신 시 stdout 오염을 방지하면서 디버그 로그를 파일에 기록하거나 설정을 커스텀할 수 있습니다:
+
+```json
+{
+  "mcpServers": {
+    "office-docs": {
+      "command": "uvx",
+      "args": [
+        "office-docs-mcp",
+        "--log-level", "DEBUG",
+        "--log-file", "/tmp/office_docs_mcp.log",
+        "serve"
+      ],
+      "env": {
+        "OFFICE_DOCS_MCP_LOGGING__LEVEL": "DEBUG",
+        "OFFICE_DOCS_MCP_LOGGING__FILE": "/tmp/office_docs_mcp.log"
+      }
+    }
+  }
+}
+```
+
+#### 로컬 개발 소스 디렉토리에서 연동할 경우:
 
 ```json
 {
@@ -117,7 +141,21 @@ uv run office-docs-mcp completion bash > /etc/bash_completion.d/office-docs-mcp
 }
 ```
 
-자세한 연동 예시는 [mcp.example.json](mcp.example.json) 파일에서도 확인하실 수 있습니다.
+#### 지원되는 환경 변수 및 CLI 옵션
+
+| 분류 | 이름 / 플래그 | 설명 | 기본값 / 예시 |
+| :--- | :--- | :--- | :--- |
+| **환경 변수** | `OFFICE_DOCS_MCP_LOGGING__LEVEL` | 로깅 레벨 설정 | `INFO` (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| **환경 변수** | `OFFICE_DOCS_MCP_LOGGING__FILE` | 서버 로그 출력 파일 경로 | `/path/to/office_docs_mcp.log` |
+| **환경 변수** | `OFFICE_DOCS_MCP_APP__NAME` | 앱 식별자 이름 | `office_docs_mcp` |
+| **환경 변수** | `XDG_CONFIG_HOME` | 기본 설정 파일 저장 디렉토리 (Linux) | `~/.config` |
+| **CLI 옵션** | `--log-level <LEVEL>` | 명령줄에서 로그 레벨 직접 지정 | `DEBUG`, `INFO` 등 |
+| **CLI 옵션** | `--log-file <PATH>` | 명령줄에서 로그 파일 경로 직접 지정 | `/path/to/logfile.log` |
+| **CLI 옵션** | `-c, --config <PATH>` | 사용할 `config.toml` 경로 명시적 지정 | `~/.config/office_docs_mcp/config.toml` |
+| **CLI 옵션** | `--no-color` | 터미널/로그 ANSI 색상 코드 비활성화 | 플래그 |
+| **CLI 옵션** | `-t, --transport <stdio\|sse>` | MCP 전송 프로토콜 지정 (`serve` 명령어) | `stdio` |
+
+전체 설정 템플릿은 [mcp.example.json](mcp.example.json) 파일에서 확인하실 수 있습니다.
 
 ---
 

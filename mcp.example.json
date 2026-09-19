@@ -7,6 +7,33 @@
         "serve"
       ]
     },
+    "office-docs-debug": {
+      "command": "uvx",
+      "args": [
+        "office-docs-mcp",
+        "--log-level",
+        "DEBUG",
+        "--log-file",
+        "/tmp/office_docs_mcp.log",
+        "serve"
+      ],
+      "env": {
+        "OFFICE_DOCS_MCP_LOGGING__LEVEL": "DEBUG",
+        "OFFICE_DOCS_MCP_LOGGING__FILE": "/tmp/office_docs_mcp.log"
+      }
+    },
+    "office-docs-custom-config": {
+      "command": "uvx",
+      "args": [
+        "office-docs-mcp",
+        "--config",
+        "/path/to/custom/config.toml",
+        "serve"
+      ],
+      "env": {
+        "XDG_CONFIG_HOME": "/path/to/config/home"
+      }
+    },
     "office-docs-local": {
       "command": "uv",
       "args": [
@@ -15,7 +42,10 @@
         "run",
         "office-docs-mcp",
         "serve"
-      ]
+      ],
+      "env": {
+        "OFFICE_DOCS_MCP_LOGGING__LEVEL": "INFO"
+      }
     }
   }
 }
