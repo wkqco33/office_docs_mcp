@@ -42,3 +42,17 @@ All new features and bugfixes must follow the Red-Green-Refactor cycle:
 - Update `CHANGELOG.md` under `[Unreleased]` with your changes.
 - Update `README.md` and docstrings if public tool signatures or behavior change.
 - Never commit binary files, credentials, or generated files.
+
+---
+
+## 4. Release Process
+
+1. Update the version in `pyproject.toml`, `src/office_docs_mcp/__init__.py`, and `src/office_docs_mcp/main.py`.
+2. Move relevant unreleased notes in `CHANGELOG.md` to the new version heading with release date.
+3. Commit and push changes to `main`.
+4. Create and push a semver tag:
+   ```bash
+   git tag v0.1.0
+   git push origin v0.1.0
+   ```
+5. GitHub Actions (`.github/workflows/release.yml`) will run tests, build distribution wheels, publish to PyPI using Trusted Publishing (OIDC), and create a GitHub Release.

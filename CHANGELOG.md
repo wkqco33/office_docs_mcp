@@ -21,7 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `config set <key> <value>`: Modify configuration keys with automatic type parsing (boolean, integer, float, list, string) and atomic writing.
   - `config get <key>`: Retrieve specific configuration values by dotted path.
 - **Config Manager Utility**: `src/office_docs_mcp/common/config_manager.py` for safe TOML serialization, platform directory resolution, and nested key management.
-- **Fault-Tolerant Runtime Bootstrap**: `SafeConfigSettings` to prevent CLI errors when configuration files are not yet created.
+- **Automated PyPI Release Workflow**:
+  - Added `.github/workflows/release.yml` triggered on version tags (`v*`).
+  - Automated testing, package building with `uv build`, PyPI Trusted Publishing (OIDC), and GitHub Releases creation with attached distribution artifacts.
 
 ### Added
 - **MCP Server**: FastMCP server with Stdio and SSE transport support via `office-docs-mcp serve`.
