@@ -85,7 +85,20 @@ uv run office-docs-mcp completion bash > /etc/bash_completion.d/office-docs-mcp
 
 ### 4. Claude Desktop / MCP 클라이언트 연동 설정 예시
 
-`claude_desktop_config.json` 등에 아래와 같이 추가합니다:
+별도의 저장소 클론이나 사전 설치 없이 `uvx`를 통해 곧바로 연동할 수 있습니다:
+
+```json
+{
+  "mcpServers": {
+    "office-docs": {
+      "command": "uvx",
+      "args": ["office-docs-mcp", "serve"]
+    }
+  }
+}
+```
+
+또는 로컬 소스 디렉토리에서 직접 실행할 경우:
 
 ```json
 {
