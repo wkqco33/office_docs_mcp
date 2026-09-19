@@ -65,8 +65,13 @@ uv run office-docs-mcp tools --plain
 # 기계 판독용 JSON 스키마 덤프
 uv run office-docs-mcp tools --json
 
-# 설정 확인
-uv run office-docs-mcp config
+# 설정 관리 서브명령어 (config init, show, path, set, get)
+uv run office-docs-mcp config show                  # 현재 설정 전체 확인 (JSON)
+uv run office-docs-mcp config show --toml           # TOML 형식으로 확인
+uv run office-docs-mcp config init                  # 새 config.toml 생성 (--force로 덮어쓰기)
+uv run office-docs-mcp config path                  # 활성 설정 파일 경로 확인 (--json 지원)
+uv run office-docs-mcp config set logging.level DEBUG # 특정 설정 키 변경
+uv run office-docs-mcp config get logging.level       # 특정 설정 값 조회
 
 # 셸 자동완성 스크립트 생성
 uv run office-docs-mcp completion bash > /etc/bash_completion.d/office-docs-mcp

@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-09-19
+### Added
+- **Config Management Subcommands (`config *`)**:
+  - `config init`: Initialize default `config.toml` file with `--force` and `--path` options.
+  - `config show`: View merged runtime configuration or inspect a specific key in JSON or TOML format (`--json`, `--toml`).
+  - `config path`: Display the active configuration file path with optional `--json` status flag.
+  - `config set <key> <value>`: Modify configuration keys with automatic type parsing (boolean, integer, float, list, string) and atomic writing.
+  - `config get <key>`: Retrieve specific configuration values by dotted path.
+- **Config Manager Utility**: `src/office_docs_mcp/common/config_manager.py` for safe TOML serialization and nested key management.
+- **Fault-Tolerant Runtime Bootstrap**: `SafeConfigSettings` to prevent CLI errors when configuration files are not yet created.
 
 ### Added
 - **MCP Server**: FastMCP server with Stdio and SSE transport support via `office-docs-mcp serve`.

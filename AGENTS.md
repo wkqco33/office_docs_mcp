@@ -52,8 +52,9 @@ office_docs_mcp/
 │       ├── __init__.py
 │       ├── main.py            # CLI 진입점 (serve 명령어 제공)
 │       ├── server.py          # FastMCP 서버 인스턴스 및 도구 바인딩
-│       ├── common/            # 공통 유틸리티 (파일 검증, 페이징 등)
+│       ├── common/            # 공통 유틸리티 (파일 검증, 페이징, 설정 관리 등)
 │       │   ├── __init__.py
+│       │   ├── config_manager.py
 │       │   └── file_utils.py
 │       ├── excel/             # Excel 전용 로직 (.xlsx)
 │       │   ├── __init__.py
@@ -70,6 +71,7 @@ office_docs_mcp/
 └── tests/
     ├── __init__.py
     ├── test_smoke.py
+    ├── test_config_cli.py     # CLI config 서브명령어 테스트
     ├── test_excel.py          # Excel 서비스 및 도구 단위 테스트
     ├── test_word.py           # Word 서비스 및 도구 단위 테스트
     ├── test_powerpoint.py     # PowerPoint 서비스 및 도구 단위 테스트
