@@ -7,6 +7,8 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from wconfig import user_config_dir
+
 DEFAULT_CONFIG: dict[str, Any] = {
     "app": {
         "name": "office_docs_mcp",
@@ -15,6 +17,23 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "level": "INFO",
     },
 }
+
+
+def get_platform_config_path(
+    platform: str | None = None,
+    environ: dict[str, str] | None = None,
+    home: Path | None = None,
+) -> Path:
+    """Return the platform-specific default configuration file path.
+
+    - Linux/Other: $XDG_CONFIG_HOME/office_docs_mcp/config.toml (or ~/.config/office_docs_mcp/config.toml)
+    - macOS: ~/Library/Application Support/office_docs_mcp/config.toml
+    - Windows: %APPDATA%/office_docs_mcp/config.toml
+    """
+    return (
+        user_config_dir("office_docs_mcp", platform=platform, environ=environ, home=home)
+        / "config.toml"
+    )
 
 
 def dump_toml_value(val: Any) -> str | None:
@@ -121,22 +140,32 @@ def write_toml_file(path: Path, data: Mapping[str, Any]) -> None:
 def resolve_config_path(
     flag_path: str | None = None,
     root_config_flag: str | None = None,
+    local: bool = False,
 ) -> Path:
-    """Resolve the effective configuration file path."""
+    """Resolve the effective configuration file path.
+
+    Priority:
+      1. Explicit flag path (--path / -p)
+      2. Root persistent config flag (--config / -c)
+      3. Local flag (--local / -l -> ./config.toml)
+      4. Platform-standard default configuration path (e.g. ~/.config/office_docs_mcp/config.toml)
+    """
     if flag_path:
         return Path(flag_path).resolve()
     if root_config_flag:
         return Path(root_config_flag).resolve()
-    return Path("config.toml").resolve()
+    if local:
+        return Path("config.toml").resolve()
+    return get_platform_config_path()
 
 
 def init_config(
-    path: str | Path = "config.toml",
+    path: str | Path | None = None,
     force: bool = False,
     template: dict[str, Any] | None = None,
 ) -> Path:
     """Initialize a new config.toml file with default template values."""
-    target = Path(path).resolve()
+    target = Path(path).resolve() if path is not None else get_platform_config_path()
     if target.exists() and not force:
         raise FileExistsError(
             f"Configuration file already exists at '{target}'. Use --force to overwrite."
@@ -145,9 +174,9 @@ def init_config(
     return target
 
 
-def load_raw_config(path: str | Path = "config.toml") -> dict[str, Any]:
+def load_raw_config(path: str | Path | None = None) -> dict[str, Any]:
     """Load configuration dictionary from a TOML file."""
-    target = Path(path).resolve()
+    target = Path(path).resolve() if path is not None else get_platform_config_path()
     if not target.exists():
         return {}
     content = target.read_text(encoding="utf-8")
@@ -180,9 +209,13 @@ def set_nested_key(data: dict[str, Any], key: str, value: Any) -> None:
     curr[parts[-1]] = value
 
 
-def update_config_file(path: str | Path, key: str, value_raw: str) -> tuple[Any, Path]:
+def update_config_file(
+    path: str | Path | None = None,
+    key: str = "",
+    value_raw: str = "",
+) -> tuple[Any, Path]:
     """Update a key-value pair in a TOML configuration file."""
-    target = Path(path).resolve()
+    target = Path(path).resolve() if path is not None else get_platform_config_path()
     if target.exists():
         try:
             data = load_raw_config(target)

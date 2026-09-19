@@ -14,6 +14,7 @@ from .common.config_manager import (
     DEFAULT_CONFIG,
     dump_toml,
     get_nested_key,
+    get_platform_config_path,
     init_config,
     resolve_config_path,
     update_config_file,
@@ -23,12 +24,24 @@ APP_NAME = "office_docs_mcp"
 
 
 class SafeConfigSettings(ConfigSettings):
-    """ConfigSettings that tolerates missing files and loads only existing configurations."""
+    """ConfigSettings that loads platform defaults, local overrides, and CLI flags safely."""
 
     def build(self, flag_values: Mapping[str, Any]) -> Any:
         from wconfig import load_config
 
-        files = [f for f in self.files if Path(f).exists()]
+        files: list[str] = []
+
+        # 1. Platform-standard default configuration file (e.g. ~/.config/office_docs_mcp/config.toml)
+        platform_cfg = get_platform_config_path()
+        if platform_cfg.exists():
+            files.append(str(platform_cfg))
+
+        # 2. Local config.toml (if present in cwd and distinct from platform config)
+        local_cfg = Path("config.toml").resolve()
+        if local_cfg.exists() and local_cfg != platform_cfg.resolve():
+            files.append(str(local_cfg))
+
+        # 3. Explicit --config flag override
         file_override = _flag_override(flag_values, self.file_flag)
         if file_override is not None and Path(str(file_override)).exists():
             files.append(str(file_override))
@@ -77,7 +90,7 @@ def build_root() -> Command:
     root.configure_runtime(
         config=SafeConfigSettings(
             defaults=DEFAULT_CONFIG,
-            files=("config.toml",),
+            files=(),
             dotenv=".env",
             env_prefix="OFFICE_DOCS_MCP",
             file_flag="config",
@@ -95,7 +108,10 @@ def build_root() -> Command:
         use="config",
         short="Manage and inspect runtime configuration.",
         long=(
-            "Manage office-docs-mcp configuration (show, init, path, set, get).\n\n"
+            "Manage office-docs-mcp configuration (show, init, path, set, get).\n"
+            "By default, configuration is stored in the platform standard config directory\n"
+            "(e.g. ~/.config/office_docs_mcp/config.toml on Linux, Application Support on macOS,\n"
+            "AppData on Windows).\n\n"
             "Subcommands:\n"
             "  init    Initialize a new config.toml file with default values\n"
             "  show    Display effective configuration or a specific key\n"
@@ -106,6 +122,7 @@ def build_root() -> Command:
             "  office-docs-mcp config\n"
             "  office-docs-mcp config show\n"
             "  office-docs-mcp config init\n"
+            "  office-docs-mcp config init --local\n"
             "  office-docs-mcp config path\n"
             "  office-docs-mcp config set logging.level DEBUG\n"
             "  office-docs-mcp config get logging.level"
@@ -134,31 +151,41 @@ def build_root() -> Command:
         use="init",
         short="Initialize a new config.toml file with default values.",
         long=(
-            "Create a new configuration file with default settings.\n\n"
+            "Create a new configuration file with default settings.\n"
+            "Defaults to the platform configuration directory unless --local or --path is given.\n\n"
             "Examples:\n"
             "  office-docs-mcp config init\n"
             "  office-docs-mcp config init --force\n"
+            "  office-docs-mcp config init --local\n"
             "  office-docs-mcp config init --path custom.toml"
         ),
         run=run_config_init,
     )
     config_init.add_bool_flag("force", help="Overwrite existing configuration file", shorthand="f")
+    config_init.add_bool_flag(
+        "local", help="Initialize in current working directory (./config.toml)", shorthand="l"
+    )
     config_init.add_string_flag(
-        "path", help="Target configuration file path (default: config.toml)", shorthand="p"
+        "path", help="Explicit configuration file path to create", shorthand="p"
     )
 
     config_path = Command(
         use="path",
         short="Display the path of the active config file.",
         long=(
-            "Display the path of the configuration file.\n\n"
+            "Display the path of the configuration file.\n"
+            "Defaults to the platform configuration directory unless --local or --config is given.\n\n"
             "Examples:\n"
             "  office-docs-mcp config path\n"
+            "  office-docs-mcp config path --local\n"
             "  office-docs-mcp config path --json"
         ),
         run=run_config_path,
     )
     config_path.add_bool_flag("json", help="Output path details in JSON format")
+    config_path.add_bool_flag(
+        "local", help="Display local configuration file path (./config.toml)", shorthand="l"
+    )
 
     config_set = Command(
         use="set <key> <value>",
@@ -168,12 +195,16 @@ def build_root() -> Command:
             "Supports dotted keys and automatic type conversion (bool, int, float, list).\n\n"
             "Examples:\n"
             "  office-docs-mcp config set logging.level DEBUG\n"
+            "  office-docs-mcp config set --local logging.level DEBUG\n"
             "  office-docs-mcp config set app.name my_server"
         ),
         run=run_config_set,
     )
+    config_set.add_bool_flag(
+        "local", help="Modify local configuration file (./config.toml)", shorthand="l"
+    )
     config_set.add_string_flag(
-        "path", help="Target configuration file path to update", shorthand="p"
+        "path", help="Explicit configuration file path to modify", shorthand="p"
     )
 
     config_get = Command(
@@ -257,7 +288,11 @@ def run_config_show(ctx) -> int:
 
 
 def run_config_init(ctx) -> int:
-    target_path = resolve_config_path(ctx.flags.get("path"), ctx.flags.get("config"))
+    target_path = resolve_config_path(
+        flag_path=ctx.flags.get("path"),
+        root_config_flag=ctx.flags.get("config"),
+        local=bool(ctx.flags.get("local")),
+    )
     force = bool(ctx.flags.get("force"))
     try:
         created = init_config(target_path, force=force)
@@ -272,7 +307,10 @@ def run_config_init(ctx) -> int:
 
 
 def run_config_path(ctx) -> int:
-    target_path = resolve_config_path(ctx.flags.get("config"))
+    target_path = resolve_config_path(
+        root_config_flag=ctx.flags.get("config"),
+        local=bool(ctx.flags.get("local")),
+    )
     if ctx.flags.get("json"):
         payload = {
             "path": str(target_path),
@@ -291,7 +329,11 @@ def run_config_set(ctx) -> int:
 
     key = ctx.args[0]
     raw_val = ctx.args[1]
-    target_path = resolve_config_path(ctx.flags.get("path"), ctx.flags.get("config"))
+    target_path = resolve_config_path(
+        flag_path=ctx.flags.get("path"),
+        root_config_flag=ctx.flags.get("config"),
+        local=bool(ctx.flags.get("local")),
+    )
 
     try:
         parsed_val, updated_path = update_config_file(target_path, key, raw_val)

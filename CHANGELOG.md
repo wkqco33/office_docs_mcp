@@ -10,13 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Platform-Standard Default Configuration Paths**:
+  - Support for XDG Base Directory specification on Linux (`~/.config/office_docs_mcp/config.toml`), Application Support on macOS, and AppData on Windows.
+  - Added `--local` (`-l`) flag across `config init`, `config path`, and `config set` to easily operate on local project `./config.toml`.
+  - Hierarchical runtime configuration merging: base defaults -> platform config -> local project config -> CLI `--config` override -> environment variables.
 - **Config Management Subcommands (`config *`)**:
-  - `config init`: Initialize default `config.toml` file with `--force` and `--path` options.
+  - `config init`: Initialize default `config.toml` file with `--force`, `--local`, and `--path` options.
   - `config show`: View merged runtime configuration or inspect a specific key in JSON or TOML format (`--json`, `--toml`).
-  - `config path`: Display the active configuration file path with optional `--json` status flag.
+  - `config path`: Display the active configuration file path with optional `--json` and `--local` flags.
   - `config set <key> <value>`: Modify configuration keys with automatic type parsing (boolean, integer, float, list, string) and atomic writing.
   - `config get <key>`: Retrieve specific configuration values by dotted path.
-- **Config Manager Utility**: `src/office_docs_mcp/common/config_manager.py` for safe TOML serialization and nested key management.
+- **Config Manager Utility**: `src/office_docs_mcp/common/config_manager.py` for safe TOML serialization, platform directory resolution, and nested key management.
 - **Fault-Tolerant Runtime Bootstrap**: `SafeConfigSettings` to prevent CLI errors when configuration files are not yet created.
 
 ### Added

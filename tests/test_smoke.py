@@ -58,6 +58,7 @@ def test_public_api_exports():
     assert "validate_file_path" in office_docs_mcp.common.__all__
     assert "ensure_parent_dir" in office_docs_mcp.common.__all__
     assert "format_as_markdown_table" in office_docs_mcp.common.__all__
+    assert "get_platform_config_path" in office_docs_mcp.common.__all__
 
     # Excel exports
     assert "excel_get_metadata" in office_docs_mcp.excel.__all__

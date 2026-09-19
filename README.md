@@ -65,12 +65,18 @@ uv run office-docs-mcp tools --plain
 # 기계 판독용 JSON 스키마 덤프
 uv run office-docs-mcp tools --json
 
-# 설정 관리 서브명령어 (config init, show, path, set, get)
-uv run office-docs-mcp config show                  # 현재 설정 전체 확인 (JSON)
+# 설정 관리 서브명령어 (각 플랫폼 기본 경로 표준 지원)
+# - Linux: ~/.config/office_docs_mcp/config.toml ($XDG_CONFIG_HOME)
+# - macOS: ~/Library/Application Support/office_docs_mcp/config.toml
+# - Windows: %APPDATA%/office_docs_mcp/config.toml
+uv run office-docs-mcp config show                  # 현재 병합된 설정 전체 확인 (JSON)
 uv run office-docs-mcp config show --toml           # TOML 형식으로 확인
-uv run office-docs-mcp config init                  # 새 config.toml 생성 (--force로 덮어쓰기)
-uv run office-docs-mcp config path                  # 활성 설정 파일 경로 확인 (--json 지원)
-uv run office-docs-mcp config set logging.level DEBUG # 특정 설정 키 변경
+uv run office-docs-mcp config init                  # 플랫폼 기본 경로에 config.toml 생성
+uv run office-docs-mcp config init --local          # 현재 작업 디렉토리에 ./config.toml 생성
+uv run office-docs-mcp config path                  # 플랫폼 기본 설정 파일 경로 확인 (--json 지원)
+uv run office-docs-mcp config path --local          # 로컬 설정 파일 경로 확인
+uv run office-docs-mcp config set logging.level DEBUG # 플랫폼 설정 파일 키 변경
+uv run office-docs-mcp config set --local logging.level DEBUG # 로컬 설정 파일 키 변경
 uv run office-docs-mcp config get logging.level       # 특정 설정 값 조회
 
 # 셸 자동완성 스크립트 생성
