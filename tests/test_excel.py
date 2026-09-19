@@ -96,3 +96,91 @@ def test_excel_formula_handling(tmp_path):
         format="raw",
     )
     assert formula_view == [["=SUM(A1:A2)"]]
+
+
+def test_excel_write_backup(tmp_path):
+    f = tmp_path / "data_bak.xlsx"
+    excel_create_workbook(str(f), sheet_names=["Sheet1"])
+    res = excel_write_cell(str(f), "Sheet1", "A1", "value", backup=True)
+    assert "backup created" in res
+    backups = list(tmp_path.glob("data_bak.xlsx.*.bak"))
+    assert len(backups) == 1
+
+
+def test_excel_search(tmp_path):
+    from office_docs_mcp.excel.reader import excel_search
+
+    f = tmp_path / "search_test.xlsx"
+    excel_create_workbook(str(f), sheet_names=["Revenue", "Expenses"])
+
+    excel_write_range(
+        str(f),
+        "Revenue",
+        "A1",
+        [
+            ["Quarter", "Product", "Amount"],
+            ["Q1", "Alpha Subscription", 5000],
+            ["Q2", "Beta License", 7500],
+        ],
+    )
+    excel_write_range(
+        str(f),
+        "Expenses",
+        "A1",
+        [
+            ["Category", "Detail", "Cost"],
+            ["Server", "Alpha Cloud Hosting", 1200],
+        ],
+    )
+
+    # Search case-insensitive across all sheets
+    results = excel_search(str(f), query="alpha")
+    assert len(results) == 2
+    sheets = {r["sheet"] for r in results}
+    assert sheets == {"Revenue", "Expenses"}
+
+    # Search in specific sheet
+    rev_results = excel_search(str(f), query="alpha", sheet_name="Revenue")
+    assert len(rev_results) == 1
+    assert rev_results[0]["coordinate"] == "B2"
+    assert rev_results[0]["value"] == "Alpha Subscription"
+    assert "Q1" in rev_results[0]["row_preview"]
+
+    # Search case-sensitive
+    exact_res = excel_search(str(f), query="ALPHA", case_sensitive=True)
+    assert len(exact_res) == 0
+
+
+def test_excel_manage_sheets(tmp_path):
+    from office_docs_mcp.excel.reader import excel_get_metadata
+    from office_docs_mcp.excel.writer import excel_manage_sheets
+
+    f = tmp_path / "sheets_test.xlsx"
+    excel_create_workbook(str(f), sheet_names=["Original"])
+
+    # 1. Add sheet
+    res = excel_manage_sheets(str(f), action="add", sheet_name="NewSheet")
+    assert "Added sheet" in res
+    assert "NewSheet" in excel_get_metadata(str(f))["sheet_names"]
+
+    # 2. Rename sheet
+    res = excel_manage_sheets(
+        str(f), action="rename", sheet_name="NewSheet", new_name="RenamedSheet"
+    )
+    assert "Renamed sheet" in res
+    assert "RenamedSheet" in excel_get_metadata(str(f))["sheet_names"]
+    assert "NewSheet" not in excel_get_metadata(str(f))["sheet_names"]
+
+    # 3. Copy sheet
+    res = excel_manage_sheets(str(f), action="copy", sheet_name="Original", new_name="OriginalCopy")
+    assert "Copied sheet" in res
+    assert "OriginalCopy" in excel_get_metadata(str(f))["sheet_names"]
+
+    # 4. Delete sheet
+    res = excel_manage_sheets(str(f), action="delete", sheet_name="OriginalCopy")
+    assert "Deleted sheet" in res
+    assert "OriginalCopy" not in excel_get_metadata(str(f))["sheet_names"]
+
+    # Invalid action
+    with pytest.raises(ValueError, match="Unsupported action"):
+        excel_manage_sheets(str(f), action="invalid_action", sheet_name="Original")

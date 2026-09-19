@@ -120,3 +120,64 @@ def word_read_table(
     headers = rows_data[0]
     data_rows = rows_data[1:] if len(rows_data) > 1 else []
     return format_as_markdown_table(headers, data_rows)
+
+
+def word_search(
+    file_path: str,
+    query: str,
+    case_sensitive: bool = False,
+    max_results: int = 50,
+) -> list[dict[str, Any]]:
+    """Search for a text query across Word paragraphs and tables.
+
+    Args:
+        file_path: Path to the Word document (.docx).
+        query: Text to search for.
+        case_sensitive: Whether search is case sensitive.
+        max_results: Maximum results to return (default 50).
+
+    Returns:
+        List of match dictionaries detailing location, text, and snippets.
+    """
+    path = validate_file_path(file_path, expected_extensions=VALID_WORD_EXTS)
+    doc = Document(str(path))
+    results: list[dict[str, Any]] = []
+
+    norm_query = query if case_sensitive else query.lower()
+
+    # 1. Search paragraphs
+    for p_idx, p in enumerate(doc.paragraphs):
+        p_text = p.text
+        cmp_text = p_text if case_sensitive else p_text.lower()
+        if norm_query in cmp_text:
+            results.append(
+                {
+                    "location_type": "paragraph",
+                    "paragraph_idx": p_idx,
+                    "style": p.style.name if p.style else None,
+                    "text": p_text,
+                }
+            )
+            if len(results) >= max_results:
+                return results
+
+    # 2. Search tables
+    for t_idx, table in enumerate(doc.tables):
+        for r_idx, row in enumerate(table.rows):
+            for c_idx, cell in enumerate(row.cells):
+                c_text = cell.text
+                cmp_text = c_text if case_sensitive else c_text.lower()
+                if norm_query in cmp_text:
+                    results.append(
+                        {
+                            "location_type": "table",
+                            "table_idx": t_idx,
+                            "row_idx": r_idx,
+                            "col_idx": c_idx,
+                            "text": c_text,
+                        }
+                    )
+                    if len(results) >= max_results:
+                        return results
+
+    return results

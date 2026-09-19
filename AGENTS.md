@@ -86,12 +86,16 @@ office_docs_mcp/
 - `excel_get_metadata(file_path: str)`: 시트 목록, 시트별 최대 행/열 수, 컬럼 헤더 요약.
 - `excel_read_sheet(file_path: str, sheet_name: str | None = None, start_row: int = 1, end_row: int = 50, start_col: int = 1, end_col: int = 20, format: str = "markdown")`:
   - 특정 시트의 지정된 행/열 범위를 읽어 반환 (기본 1-based 인덱스 사용, LLM 직관성 일치).
-- `excel_write_cell(file_path: str, sheet_name: str, coordinate: str, value: Any)`:
+- `excel_search(file_path: str, query: str, sheet_name: str | None = None, case_sensitive: bool = False, max_results: int = 50)`:
+  - 워크시트 전체 또는 특정 시트의 셀에서 키워드 검색 및 인접 행 미리보기 반환.
+- `excel_write_cell(file_path: str, sheet_name: str, coordinate: str, value: Any, backup: bool = False)`:
   - 예: `A1` 또는 행/열 번호로 단일 셀 값 변경.
-- `excel_write_range(file_path: str, sheet_name: str, start_cell: str, data: list[list[Any]])`:
+- `excel_write_range(file_path: str, sheet_name: str, start_cell: str, data: list[list[Any]], backup: bool = False)`:
   - 시작 셀(`A1` 등)부터 2차원 리스트 데이터를 연속 기입.
-- `excel_append_rows(file_path: str, sheet_name: str, rows: list[list[Any]])`:
+- `excel_append_rows(file_path: str, sheet_name: str, rows: list[list[Any]], backup: bool = False)`:
   - 시트 맨 마지막 행 뒤에 새로운 행들 추가.
+- `excel_manage_sheets(file_path: str, action: str, sheet_name: str, new_name: str | None = None, backup: bool = False)`:
+  - 시트 관리 (추가 `add`, 이름변경 `rename`, 복사 `copy`, 삭제 `delete`).
 - `excel_create_workbook(file_path: str, sheet_names: list[str] | None = None)`:
   - 빈 엑셀 파일 생성.
 
@@ -99,25 +103,45 @@ office_docs_mcp/
 - `word_get_outline(file_path: str)`: 문서의 헤딩(제목) 목록, 전체 단락 수, 표(Table) 개수 등 구조 요약.
 - `word_read_paragraphs(file_path: str, start_idx: int = 0, count: int = 30)`:
   - 단락 단위로 본문 텍스트 슬라이싱 읽기.
-- `word_append_paragraph(file_path: str, text: str, style: str | None = None)`:
-  - 문서 끝에 새 단락 또는 헤딩 추가.
 - `word_read_table(file_path: str, table_idx: int = 0, format: str = "markdown")`:
   - 특정 순번의 표 내용을 Markdown 표나 2차원 배열로 읽기.
-- `word_append_table_row(file_path: str, table_idx: int, row_data: list[str])`:
+- `word_search(file_path: str, query: str, case_sensitive: bool = False, max_results: int = 50)`:
+  - 문서 내 단락 및 표 셀 대상 키워드 검색.
+- `word_append_paragraph(file_path: str, text: str, style: str | None = None, backup: bool = False)`:
+  - 문서 끝에 새 단락 또는 헤딩 추가.
+- `word_append_table_row(file_path: str, table_idx: int, row_data: list[str], backup: bool = False)`:
   - 특정 표에 행 데이터 추가.
+- `word_write_table_cell(file_path: str, table_idx: int, row_idx: int, col_idx: int, text: str, backup: bool = False)`:
+  - 특정 표 셀의 텍스트 수정.
+- `word_replace_text(file_path: str, find_text: str, replace_text: str, count: int = -1, backup: bool = False)`:
+  - 문서 전체(단락 및 표) 대상 텍스트 일괄 또는 N회 검색 및 치환.
+- `word_delete_paragraph(file_path: str, paragraph_idx: int, backup: bool = False)`:
+  - 지정한 0-based 인덱스의 단락 삭제.
 - `word_create_document(file_path: str, title: str | None = None)`:
   - 빈 워드 문서 생성.
 
 ### 4.3 PowerPoint 도구군 (`ppt_*`)
 - `ppt_get_outline(file_path: str)`: 전체 슬라이드 수, 각 슬라이드의 제목 및 포함된 셰이프 종류 요약.
 - `ppt_read_slide(file_path: str, slide_idx: int)`:
-  - 특정 슬라이드의 모든 텍스트 상자 및 표 내용 추출.
-- `ppt_add_slide(file_path: str, title: str, content: str | None = None, layout_idx: int = 1)`:
+  - 특정 슬라이드의 모든 텍스트 상자, 표, 발표자 메모 내용 추출.
+- `ppt_read_notes(file_path: str, slide_idx: int)`:
+  - 특정 슬라이드의 발표자 메모(Speaker Notes) 읽기.
+- `ppt_update_notes(file_path: str, slide_idx: int, notes_text: str, backup: bool = False)`:
+  - 특정 슬라이드의 발표자 메모(발표 대본/스크립트) 작성 및 수정.
+- `ppt_search(file_path: str, query: str, case_sensitive: bool = False, max_results: int = 50)`:
+  - 슬라이드 셰이프, 표, 발표자 메모 대상 키워드 검색.
+- `ppt_add_slide(file_path: str, title: str, content: str | None = None, layout_idx: int = 1, backup: bool = False)`:
   - 제목과 본문을 포함하는 새 슬라이드 생성.
-- `ppt_update_slide_text(file_path: str, slide_idx: int, shape_idx: int, text: str)`:
+- `ppt_add_table(file_path: str, slide_idx: int, rows: int, cols: int, data: list[list[str]] | None = None, backup: bool = False)`:
+  - 특정 슬라이드에 행/열 크기 및 데이터를 지정한 표 생성.
+- `ppt_update_slide_text(file_path: str, slide_idx: int, shape_idx: int, text: str, backup: bool = False)`:
   - 특정 슬라이드의 지정된 셰이프 텍스트 수정.
 - `ppt_create_presentation(file_path: str, title: str | None = None)`:
   - 빈 프레젠테이션 파일 생성.
+
+### 4.4 MCP Prompts (`@mcp.prompt()`)
+- `analyze_spreadsheet(file_path: str, focus_area: str | None = None)`: 엑셀 데이터 구조 파악부터 심층 분석 및 요약까지의 체계적 워크플로우 가이드.
+- `create_presentation_outline(topic: str, slide_count: int = 5)`: 주제에 맞춘 슬라이드 개요 및 발표자 대본 작성 워크플로우 가이드.
 
 ---
 

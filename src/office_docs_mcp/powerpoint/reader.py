@@ -80,15 +80,133 @@ def ppt_read_slide(file_path: str, slide_idx: int) -> dict[str, Any]:
             shape_info["text"] = shape.text.strip()
 
         if shape.has_table:
-            table_rows = []
-            for row in shape.table.rows:
-                table_rows.append([c.text.strip() for c in row.cells])
-            shape_info["table_data"] = table_rows
+            table = shape.table
+            rows_data = []
+            for row in table.rows:
+                rows_data.append([cell.text.strip() for cell in row.cells])
+            shape_info["table_data"] = rows_data
 
         shapes_data.append(shape_info)
+
+    # Read notes if available
+    notes_text = ""
+    if slide.has_notes_slide and slide.notes_slide.notes_text_frame:
+        notes_text = slide.notes_slide.notes_text_frame.text.strip()
 
     return {
         "slide_index": slide_idx,
         "title": title_text,
         "shapes": shapes_data,
+        "notes": notes_text,
     }
+
+
+def ppt_read_notes(file_path: str, slide_idx: int) -> str:
+    """Read the speaker notes of a specific slide.
+
+    Args:
+        file_path: Path to the PowerPoint file (.pptx).
+        slide_idx: 0-based index of the slide.
+
+    Returns:
+        Speaker notes text string, or empty string if no notes exist.
+    """
+    path = validate_file_path(file_path, expected_extensions=VALID_PPT_EXTS)
+    prs = Presentation(str(path))
+
+    if slide_idx < 0 or slide_idx >= len(prs.slides):
+        raise IndexError(
+            f"Slide index {slide_idx} out of range. Presentation has {len(prs.slides)} slides."
+        )
+
+    slide = prs.slides[slide_idx]
+    if not slide.has_notes_slide or not slide.notes_slide.notes_text_frame:
+        return ""
+
+    return slide.notes_slide.notes_text_frame.text.strip()
+
+
+def ppt_search(
+    file_path: str,
+    query: str,
+    case_sensitive: bool = False,
+    max_results: int = 50,
+) -> list[dict[str, Any]]:
+    """Search for a text query across PowerPoint slides, shapes, tables, and notes.
+
+    Args:
+        file_path: Path to the PowerPoint file (.pptx).
+        query: Text to search for.
+        case_sensitive: Whether search is case sensitive.
+        max_results: Maximum results to return (default 50).
+
+    Returns:
+        List of match dictionaries detailing slide index, source, and text.
+    """
+    path = validate_file_path(file_path, expected_extensions=VALID_PPT_EXTS)
+    prs = Presentation(str(path))
+    results: list[dict[str, Any]] = []
+
+    norm_query = query if case_sensitive else query.lower()
+
+    for s_idx, slide in enumerate(prs.slides):
+        slide_title = ""
+        if slide.shapes.title and slide.shapes.title.has_text_frame:
+            slide_title = slide.shapes.title.text.strip()
+
+        # 1. Search shapes and tables
+        for sh_idx, shape in enumerate(slide.shapes):
+            if shape.has_text_frame:
+                txt = shape.text
+                cmp_txt = txt if case_sensitive else txt.lower()
+                if norm_query in cmp_txt:
+                    results.append(
+                        {
+                            "slide_idx": s_idx,
+                            "slide_title": slide_title,
+                            "source": "shape",
+                            "shape_idx": sh_idx,
+                            "shape_name": shape.name,
+                            "text": txt.strip(),
+                        }
+                    )
+                    if len(results) >= max_results:
+                        return results
+
+            if shape.has_table:
+                for r_idx, row in enumerate(shape.table.rows):
+                    for c_idx, cell in enumerate(row.cells):
+                        cell_txt = cell.text
+                        cmp_txt = cell_txt if case_sensitive else cell_txt.lower()
+                        if norm_query in cmp_txt:
+                            results.append(
+                                {
+                                    "slide_idx": s_idx,
+                                    "slide_title": slide_title,
+                                    "source": "table",
+                                    "shape_idx": sh_idx,
+                                    "row_idx": r_idx,
+                                    "col_idx": c_idx,
+                                    "text": cell_txt.strip(),
+                                }
+                            )
+                            if len(results) >= max_results:
+                                return results
+
+        # 2. Search speaker notes
+        if slide.has_notes_slide and slide.notes_slide.notes_text_frame:
+            notes_txt = slide.notes_slide.notes_text_frame.text
+            cmp_txt = notes_txt if case_sensitive else notes_txt.lower()
+            if norm_query in cmp_txt:
+                results.append(
+                    {
+                        "slide_idx": s_idx,
+                        "slide_title": slide_title,
+                        "source": "notes",
+                        "text": notes_txt.strip(),
+                    }
+                )
+                if len(results) >= max_results:
+                    return results
+
+    return results

@@ -120,3 +120,58 @@ def excel_read_sheet(
 
     finally:
         wb.close()
+
+
+def excel_search(
+    file_path: str,
+    query: str,
+    sheet_name: str | None = None,
+    case_sensitive: bool = False,
+    max_results: int = 50,
+) -> list[dict[str, Any]]:
+    """Search for a text query across Excel worksheet cells.
+
+    Args:
+        file_path: Path to the Excel file.
+        query: Text to search for.
+        sheet_name: Specific sheet to search in. If None, searches all sheets.
+        case_sensitive: Whether the search should be case sensitive.
+        max_results: Maximum number of search results to return (default 50).
+
+    Returns:
+        List of dictionaries with sheet, coordinate, row, col, value, and row_preview.
+    """
+    path = validate_file_path(file_path, expected_extensions=VALID_EXCEL_EXTS)
+    wb = openpyxl.load_workbook(path, data_only=True)
+    results: list[dict[str, Any]] = []
+
+    target_sheets = [sheet_name] if sheet_name else wb.sheetnames
+    norm_query = query if case_sensitive else query.lower()
+
+    try:
+        for s_name in target_sheets:
+            if s_name not in wb.sheetnames:
+                continue
+            ws = wb[s_name]
+
+            for row in ws.iter_rows(values_only=False):
+                row_vals = [cell.value for cell in row]
+                for cell in row:
+                    val_str = str(cell.value) if cell.value is not None else ""
+                    cmp_str = val_str if case_sensitive else val_str.lower()
+                    if norm_query in cmp_str:
+                        results.append(
+                            {
+                                "sheet": s_name,
+                                "coordinate": cell.coordinate,
+                                "row": cell.row,
+                                "col": cell.column,
+                                "value": cell.value,
+                                "row_preview": [v for v in row_vals if v is not None],
+                            }
+                        )
+                        if len(results) >= max_results:
+                            return results
+        return results
+    finally:
+        wb.close()

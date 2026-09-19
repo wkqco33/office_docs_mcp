@@ -41,3 +41,27 @@ def test_format_as_markdown_table():
     md = format_as_markdown_table(headers, rows)
     expected = "| Col A | Col B |\n| --- | --- |\n| 1 | 2 |\n| 3 | 4 |"
     assert md == expected
+
+
+def test_create_backup(tmp_path):
+    from office_docs_mcp.common.file_utils import create_backup
+
+    f = tmp_path / "data.xlsx"
+    f.write_text("content", encoding="utf-8")
+
+    # Custom suffix
+    bak = create_backup(f, suffix=".bak")
+    assert bak is not None
+    assert bak.exists()
+    assert bak.name == "data.xlsx.bak"
+    assert bak.read_text(encoding="utf-8") == "content"
+
+    # Default timestamp suffix
+    bak_ts = create_backup(f)
+    assert bak_ts is not None
+    assert bak_ts.exists()
+    assert bak_ts.name.startswith("data.xlsx.") and bak_ts.name.endswith(".bak")
+
+    # Non-existent file
+    missing = tmp_path / "not_exist.xlsx"
+    assert create_backup(missing) is None

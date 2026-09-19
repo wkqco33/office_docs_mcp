@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import shutil
 from collections.abc import Iterable
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -54,3 +56,23 @@ def format_as_markdown_table(headers: list[str], rows: Iterable[list[Any]]) -> s
         table_lines.append("| " + " | ".join(cells) + " |")
 
     return "\n".join(table_lines)
+
+
+def create_backup(file_path: str | Path, suffix: str | None = None) -> Path | None:
+    """Create a backup of the specified file if it exists.
+
+    If suffix is None, a timestamped suffix '.YYYYMMDD_HHMMSS.bak' is used.
+    Returns the Path to the created backup file, or None if the target file does not exist.
+    """
+    path = Path(file_path).resolve()
+    if not path.exists() or not path.is_file():
+        return None
+
+    if suffix is None:
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_path = path.with_name(f"{path.name}.{ts}.bak")
+    else:
+        backup_path = path.with_name(f"{path.name}{suffix}")
+
+    shutil.copy2(path, backup_path)
+    return backup_path

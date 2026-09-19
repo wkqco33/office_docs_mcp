@@ -14,6 +14,8 @@ async def test_server_tools_registered():
     # Verify Excel tools
     assert "excel_get_metadata" in tool_names
     assert "excel_read_sheet" in tool_names
+    assert "excel_search" in tool_names
+    assert "excel_manage_sheets" in tool_names
     assert "excel_write_cell" in tool_names
     assert "excel_write_range" in tool_names
     assert "excel_append_rows" in tool_names
@@ -23,6 +25,9 @@ async def test_server_tools_registered():
     assert "word_get_outline" in tool_names
     assert "word_read_paragraphs" in tool_names
     assert "word_read_table" in tool_names
+    assert "word_search" in tool_names
+    assert "word_replace_text" in tool_names
+    assert "word_delete_paragraph" in tool_names
     assert "word_append_paragraph" in tool_names
     assert "word_append_table_row" in tool_names
     assert "word_write_table_cell" in tool_names
@@ -31,9 +36,22 @@ async def test_server_tools_registered():
     # Verify PowerPoint tools
     assert "ppt_get_outline" in tool_names
     assert "ppt_read_slide" in tool_names
+    assert "ppt_read_notes" in tool_names
+    assert "ppt_update_notes" in tool_names
+    assert "ppt_search" in tool_names
     assert "ppt_add_slide" in tool_names
+    assert "ppt_add_table" in tool_names
     assert "ppt_update_slide_text" in tool_names
     assert "ppt_create_presentation" in tool_names
+
+
+@pytest.mark.anyio
+async def test_server_prompts_registered():
+    server = get_server()
+    prompts = await server.list_prompts()
+    prompt_names = {p.name for p in prompts}
+    assert "analyze_spreadsheet" in prompt_names
+    assert "create_presentation_outline" in prompt_names
 
 
 @pytest.mark.anyio

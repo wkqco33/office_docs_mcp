@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Full-Text Search Tools**:
+  - `excel_search`: Keyword search across all worksheets or specific sheets with row preview.
+  - `word_search`: Text search across paragraphs and tables with location details.
+  - `ppt_search`: Search across slide shapes, tables, and speaker notes.
+- **PowerPoint Speaker Notes & Tables**:
+  - `ppt_read_notes`: Retrieve speaker notes for a specific slide.
+  - `ppt_update_notes`: Add or update talking points/presentation scripts for slides.
+  - `ppt_add_table`: Create structured data tables on slides with custom positioning and dimensions.
+- **Excel Sheet Lifecycle Management**:
+  - `excel_manage_sheets`: Add, rename, copy, or delete sheets with safety checks.
+- **Word Document Editing**:
+  - `word_replace_text`: Find and replace text across paragraphs and tables with optional occurrence limit.
+  - `word_delete_paragraph`: Remove a specific paragraph by index.
+- **MCP Prompts**:
+  - `@mcp.prompt() analyze_spreadsheet`: Step-by-step workflow guide for spreadsheet analysis.
+  - `@mcp.prompt() create_presentation_outline`: Structured workflow guide for presentation creation.
+- **Safe File Backup (`backup=True`)**:
+  - Added timestamped `.bak` backup option to all write operations (`excel_write_cell`, `excel_write_range`, `excel_append_rows`, `excel_manage_sheets`, `word_append_paragraph`, `word_append_table_row`, `word_write_table_cell`, `word_replace_text`, `word_delete_paragraph`, `ppt_add_slide`, `ppt_add_table`, `ppt_update_slide_text`, `ppt_update_notes`).
+
 ## [0.1.1] - 2026-09-19
 
 ### Added

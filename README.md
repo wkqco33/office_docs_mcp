@@ -15,24 +15,38 @@ LLM(대형 언어 모델)이 오피스 문서(Excel, Word, PowerPoint)를 안정
 - **Excel (`.xlsx`, `.xlsm`)**:
   - `excel_get_metadata`: 시트 목록, 크기, 컬럼 요약 조회
   - `excel_read_sheet`: 지정된 행/열 범위(1-based)를 Markdown 테이블 또는 2차원 배열로 읽기 (수식/값 토글 지원)
-  - `excel_write_cell`: 단일 셀(`A1` 등) 값/수식 쓰기
-  - `excel_write_range`: 시작 셀부터 2차원 데이터 연속 기입
-  - `excel_append_rows`: 시트 마지막 행 뒤에 데이터 추가
+  - `excel_search`: 워크시트 전체 또는 특정 시트의 셀에서 키워드 검색
+  - `excel_write_cell`: 단일 셀(`A1` 등) 값/수식 쓰기 (`backup=True` 지원)
+  - `excel_write_range`: 시작 셀부터 2차원 데이터 연속 기입 (`backup=True` 지원)
+  - `excel_append_rows`: 시트 마지막 행 뒤에 데이터 추가 (`backup=True` 지원)
+  - `excel_manage_sheets`: 시트 추가(`add`), 이름변경(`rename`), 복사(`copy`), 삭제(`delete`) (`backup=True` 지원)
   - `excel_create_workbook`: 새 빈 엑셀 파일 생성
 - **Word (`.docx`)**:
   - `word_get_outline`: 문서 헤딩(제목) 목록 및 단락/표 개수 조회
   - `word_read_paragraphs`: 단락 슬라이싱 읽기 (0-based 페이징)
   - `word_read_table`: 표 내용을 Markdown 테이블 또는 2차원 배열로 읽기
-  - `word_append_paragraph`: 문서 끝에 단락/헤딩 추가 (헤딩 레벨 자동 처리)
-  - `word_append_table_row`: 특정 표에 새 행 추가
-  - `word_write_table_cell`: 특정 표의 셀 텍스트 수정
+  - `word_search`: 문서 내 단락 및 표 셀 대상 키워드 검색
+  - `word_append_paragraph`: 문서 끝에 단락/헤딩 추가 (헤딩 레벨 자동 처리, `backup=True` 지원)
+  - `word_append_table_row`: 특정 표에 새 행 추가 (`backup=True` 지원)
+  - `word_write_table_cell`: 특정 표의 셀 텍스트 수정 (`backup=True` 지원)
+  - `word_replace_text`: 문서 전체 텍스트 일괄/부분 치환 (`backup=True` 지원)
+  - `word_delete_paragraph`: 특정 단락 삭제 (`backup=True` 지원)
   - `word_create_document`: 새 워드 문서 생성
 - **PowerPoint (`.pptx`)**:
   - `ppt_get_outline`: 전체 슬라이드 수 및 각 슬라이드 제목/셰이프 요약 조회
-  - `ppt_read_slide`: 특정 슬라이드의 텍스트 상자 및 표 내용 추출
-  - `ppt_add_slide`: 제목과 본문을 포함하는 새 슬라이드 추가 (플레이스홀더 부재 시 자동 텍스트박스 폴백)
-  - `ppt_update_slide_text`: 슬라이드 내 특정 셰이프 텍스트 수정
+  - `ppt_read_slide`: 특정 슬라이드의 텍스트 상자, 표, 발표자 메모 내용 추출
+  - `ppt_read_notes`: 특정 슬라이드의 발표자 메모(Speaker Notes) 읽기
+  - `ppt_update_notes`: 발표 대본/슬라이드 메모 작성 및 수정 (`backup=True` 지원)
+  - `ppt_search`: 슬라이드 텍스트, 표, 발표자 메모 대상 키워드 검색
+  - `ppt_add_slide`: 제목과 본문을 포함하는 새 슬라이드 추가 (`backup=True` 지원)
+  - `ppt_add_table`: 슬라이드 내 표 생성 (`backup=True` 지원)
+  - `ppt_update_slide_text`: 슬라이드 내 특정 셰이프 텍스트 수정 (`backup=True` 지원)
   - `ppt_create_presentation`: 새 프레젠테이션 파일 생성
+- **MCP Prompts (`@mcp.prompt()`)**:
+  - `analyze_spreadsheet`: 엑셀 데이터 구조 파악부터 심층 분석까지의 체계적 워크플로우 가이드
+  - `create_presentation_outline`: 주어진 주제에 대한 슬라이드 구성 및 발표자 대본 작성 가이드
+- **안전한 파일 백업**:
+  - 모든 쓰기 도구에서 `backup: bool = True` 지정 시 수정 전 원본을 타임스탬프 백업 파일(`.bak`)로 자동 보관
 
 ---
 
@@ -156,6 +170,38 @@ MCP stdio 통신 시 stdout 오염을 방지하면서 디버그 로그를 파일
 | **CLI 옵션** | `-t, --transport <stdio\|sse>` | MCP 전송 프로토콜 지정 (`serve` 명령어) | `stdio` |
 
 전체 설정 템플릿은 [mcp.example.json](mcp.example.json) 파일에서 확인하실 수 있습니다.
+
+### Pi 연동 (`uvx`)
+
+Pi에서 MCP를 사용하려면 `pi-mcp-adapter`가 필요합니다. 이 저장소에는 Pi가 자동으로 읽는 프로젝트 설정 파일 `.mcp.json`이 포함되어 있습니다.
+
+```bash
+# 최초 1회
+pi install npm:pi-mcp-adapter
+
+# 저장소 루트에서 실행하면 .mcp.json을 자동으로 읽음
+pi
+
+# 또는 설정 파일을 명시
+pi --mcp-config .mcp.json
+```
+
+Pi에서 `/mcp`로 `office-docs` 서버 상태를 확인하고, 설정을 변경한 뒤에는 `/reload`를 실행하세요. `uvx`가 PyPI에서 `office-docs-mcp`를 준비해 MCP stdio 서버를 실행하므로 별도 가상환경 활성화가 필요 없습니다. 서버는 첫 도구 호출 때 시작됩니다.
+
+### ncli로 사용 가이드 문서 추가
+
+동일한 안내를 ncli 노트로 저장하려면 로그인 후 다음을 실행하세요.
+
+```bash
+ncli login
+ncli add \\
+  --title "Office Docs MCP를 Pi에서 uvx로 사용하기" \\
+  --content-file docs/pi-mcp-ncli-guide.md \\
+  --category other \\
+  --no-input
+```
+
+자세한 절차는 [docs/pi-mcp-ncli-guide.md](docs/pi-mcp-ncli-guide.md)를 참고하세요.
 
 ---
 

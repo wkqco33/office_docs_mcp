@@ -90,3 +90,89 @@ def test_word_invalid_style(tmp_path):
     word_create_document(str(f))
     with pytest.raises(ValueError, match="Style 'NonExistentStyle' not found"):
         word_append_paragraph(str(f), "Text", style="NonExistentStyle")
+
+
+def test_word_append_backup(tmp_path):
+    f = tmp_path / "doc_bak.docx"
+    word_create_document(str(f), title="Original")
+    res = word_append_paragraph(str(f), "New text", backup=True)
+    assert "backup created" in res
+    backups = list(tmp_path.glob("doc_bak.docx.*.bak"))
+    assert len(backups) == 1
+
+
+def test_word_search(tmp_path):
+    from docx import Document
+
+    from office_docs_mcp.word.reader import word_search
+
+    f = tmp_path / "search_doc.docx"
+    word_create_document(str(f), title="Annual AI Strategy")
+    word_append_paragraph(str(f), "The mission of our AI unit is innovation.", style="Heading 1")
+    word_append_paragraph(str(f), "We develop agentic workflows for enterprise customers.")
+
+    # Add a table with AI mentioned
+    doc = Document(str(f))
+    tbl = doc.add_table(rows=2, cols=2)
+    tbl.rows[0].cells[0].text = "Project"
+    tbl.rows[0].cells[1].text = "Scope"
+    tbl.rows[1].cells[0].text = "Antigravity AI"
+    tbl.rows[1].cells[1].text = "Coding Assistance"
+    doc.save(str(f))
+
+    # Case-insensitive search
+    results = word_search(str(f), query="ai")
+    assert len(results) >= 3  # In title, heading, and table cell
+    types = {r["location_type"] for r in results}
+    assert "paragraph" in types
+    assert "table" in types
+
+    # Case-sensitive search
+    exact_results = word_search(str(f), query="Antigravity AI", case_sensitive=True)
+    assert len(exact_results) == 1
+    assert exact_results[0]["location_type"] == "table"
+    assert exact_results[0]["table_idx"] == 0
+
+
+def test_word_replace_text(tmp_path):
+    from office_docs_mcp.word.reader import word_read_paragraphs
+    from office_docs_mcp.word.writer import word_replace_text
+
+    f = tmp_path / "template.docx"
+    word_create_document(str(f), title="Contract for {{CLIENT_NAME}}")
+    word_append_paragraph(str(f), "Agreement entered on {{DATE}} with {{CLIENT_NAME}}.")
+
+    res = word_replace_text(
+        str(f), find_text="{{CLIENT_NAME}}", replace_text="Acme Corp", backup=True
+    )
+    assert "Replaced 2 occurrence(s)" in res
+
+    paras = word_read_paragraphs(str(f), start_idx=0, count=5)
+    assert "Acme Corp" in paras[0]["text"]
+    assert "Acme Corp" in paras[1]["text"]
+    assert "{{CLIENT_NAME}}" not in paras[0]["text"]
+
+
+def test_word_delete_paragraph(tmp_path):
+    from office_docs_mcp.word.reader import word_get_outline, word_read_paragraphs
+    from office_docs_mcp.word.writer import word_delete_paragraph
+
+    f = tmp_path / "delete_doc.docx"
+    word_create_document(str(f))
+    word_append_paragraph(str(f), "Keep 1")
+    word_append_paragraph(str(f), "Delete Me")
+    word_append_paragraph(str(f), "Keep 2")
+
+    initial_count = word_get_outline(str(f))["total_paragraphs"]
+
+    res = word_delete_paragraph(str(f), paragraph_idx=1)
+    assert "Deleted paragraph #1" in res
+
+    new_count = word_get_outline(str(f))["total_paragraphs"]
+    assert new_count == initial_count - 1
+
+    paras = word_read_paragraphs(str(f), start_idx=0, count=5)
+    texts = [p["text"] for p in paras]
+    assert "Delete Me" not in texts
+    assert "Keep 1" in texts
+    assert "Keep 2" in texts

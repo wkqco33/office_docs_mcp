@@ -70,3 +70,72 @@ def test_ppt_add_slide_fallback_textbox(tmp_path):
     assert slide_data["title"] == "Title Only"
     content_found = any("Fallback Content" in s.get("text", "") for s in slide_data["shapes"])
     assert content_found
+
+
+def test_ppt_speaker_notes(tmp_path):
+    from office_docs_mcp.powerpoint.reader import ppt_read_notes
+    from office_docs_mcp.powerpoint.writer import ppt_update_notes
+
+    f = tmp_path / "notes_deck.pptx"
+    ppt_create_presentation(str(f), title="Slide with Notes")
+
+    # Initial notes should be empty
+    initial_notes = ppt_read_notes(str(f), slide_idx=0)
+    assert initial_notes == ""
+
+    # Update notes with backup=True
+    res = ppt_update_notes(
+        str(f), slide_idx=0, notes_text="Remember to mention Q3 results.", backup=True
+    )
+    assert "Updated notes" in res
+
+    # Check updated notes
+    updated_notes = ppt_read_notes(str(f), slide_idx=0)
+    assert "Remember to mention Q3 results." in updated_notes
+
+    # Check backup file exists
+    backups = list(tmp_path.glob("notes_deck.pptx.*.bak"))
+    assert len(backups) == 1
+
+
+def test_ppt_search(tmp_path):
+    from office_docs_mcp.powerpoint.reader import ppt_search
+    from office_docs_mcp.powerpoint.writer import ppt_update_notes
+
+    f = tmp_path / "search_deck.pptx"
+    ppt_create_presentation(str(f), title="Global Launch Plan")
+    ppt_add_slide(str(f), title="Market Analysis", content="Target audience is Enterprise users.")
+    ppt_update_notes(str(f), slide_idx=1, notes_text="Highlight Enterprise scalability.")
+
+    # Search case-insensitive across slides, shapes, and notes
+    results = ppt_search(str(f), query="enterprise")
+    assert len(results) == 2
+    types = {r["source"] for r in results}
+    assert "shape" in types
+    assert "notes" in types
+
+    # Case-sensitive search
+    exact_results = ppt_search(str(f), query="Global Launch", case_sensitive=True)
+    assert len(exact_results) == 1
+    assert exact_results[0]["slide_idx"] == 0
+    assert exact_results[0]["source"] == "shape"
+
+
+def test_ppt_add_table(tmp_path):
+    from office_docs_mcp.powerpoint.reader import ppt_read_slide
+    from office_docs_mcp.powerpoint.writer import ppt_add_table
+
+    f = tmp_path / "table_deck.pptx"
+    ppt_create_presentation(str(f), title="Table Demo")
+
+    data = [
+        ["Feature", "Status"],
+        ["OAuth", "Done"],
+        ["Billing", "In Progress"],
+    ]
+    res = ppt_add_table(str(f), slide_idx=0, rows=3, cols=2, data=data, backup=True)
+    assert "Added table (3x2)" in res
+
+    slide_data = ppt_read_slide(str(f), slide_idx=0)
+    table_shape = next(s for s in slide_data["shapes"] if s.get("table_data"))
+    assert table_shape["table_data"] == data
