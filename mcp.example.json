@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "office-docs": {
+      "command": "uvx",
+      "args": [
+        "office-docs-mcp",
+        "serve"
+      ]
+    },
+    "office-docs-local": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/path/to/office_docs_mcp",
+        "run",
+        "office-docs-mcp",
+        "serve"
+      ]
+    }
+  }
+}

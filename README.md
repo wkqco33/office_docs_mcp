@@ -117,6 +117,8 @@ uv run office-docs-mcp completion bash > /etc/bash_completion.d/office-docs-mcp
 }
 ```
 
+자세한 연동 예시는 [mcp.example.json](mcp.example.json) 파일에서도 확인하실 수 있습니다.
+
 ---
 
 ## 개발 및 테스트 (TDD)
