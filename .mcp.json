@@ -1,8 +1,10 @@
 {
   "mcpServers": {
     "office-docs": {
+      "type": "stdio",
       "command": "uvx",
       "args": ["office-docs-mcp", "serve"],
+      "tools": ["*"],
       "lifecycle": "lazy"
     }
   }

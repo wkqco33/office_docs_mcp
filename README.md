@@ -97,9 +97,35 @@ uv run office-docs-mcp config get logging.level       # 특정 설정 값 조회
 uv run office-docs-mcp completion bash > /etc/bash_completion.d/office-docs-mcp
 ```
 
-### 4. MCP 클라이언트 연동 설정 (Claude Desktop, Antigravity `agy`, Cursor 등)
+### 4. MCP 클라이언트 연동 설정 (Copilot CLI, Claude Desktop, Antigravity `agy`, Cursor 등)
 
 별도의 저장소 클론이나 사전 설치 없이 `uvx`를 통해 곧바로 연동할 수 있습니다:
+
+#### GitHub Copilot CLI
+
+저장소 루트의 `.mcp.json`에 Copilot CLI용 `stdio` 설정이 포함되어 있습니다. 이 저장소에서
+Copilot CLI를 실행하면 폴더 신뢰를 승인한 후 `office-docs` 서버가 프로젝트별 MCP 서버로
+자동 로드됩니다.
+
+```bash
+copilot
+```
+
+서버 상태와 도구 목록은 Copilot CLI에서 다음 명령으로 확인할 수 있습니다:
+
+```text
+/mcp
+/mcp show office-docs
+```
+
+사용자 전역 설정에 추가하려면 다음 명령을 실행합니다:
+
+```bash
+copilot mcp add office-docs -- uvx office-docs-mcp serve
+```
+
+프로젝트별 설정을 공유해야 하는 경우에는 현재 저장소의 `.mcp.json`을 커밋하는 방식을
+사용하세요. `tools: ["*"]`는 이 서버의 모든 Excel, Word, PowerPoint 도구를 활성화합니다.
 
 #### Antigravity CLI (`agy`) 및 Antigravity IDE / 2.0
 - **전역 설정 (모든 프로젝트에서 사용)**: `~/.gemini/config/mcp_config.json`

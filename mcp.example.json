@@ -1,13 +1,16 @@
 {
   "mcpServers": {
     "office-docs": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "office-docs-mcp",
         "serve"
-      ]
+      ],
+      "tools": ["*"]
     },
     "office-docs-debug": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "office-docs-mcp",
@@ -17,12 +20,14 @@
         "/tmp/office_docs_mcp.log",
         "serve"
       ],
+      "tools": ["*"],
       "env": {
         "OFFICE_DOCS_MCP_LOGGING__LEVEL": "DEBUG",
         "OFFICE_DOCS_MCP_LOGGING__FILE": "/tmp/office_docs_mcp.log"
       }
     },
     "office-docs-custom-config": {
+      "type": "stdio",
       "command": "uvx",
       "args": [
         "office-docs-mcp",
@@ -30,11 +35,13 @@
         "/path/to/custom/config.toml",
         "serve"
       ],
+      "tools": ["*"],
       "env": {
         "XDG_CONFIG_HOME": "/path/to/config/home"
       }
     },
     "office-docs-local": {
+      "type": "stdio",
       "command": "uv",
       "args": [
         "--directory",
@@ -43,6 +50,7 @@
         "office-docs-mcp",
         "serve"
       ],
+      "tools": ["*"],
       "env": {
         "OFFICE_DOCS_MCP_LOGGING__LEVEL": "INFO"
       }
